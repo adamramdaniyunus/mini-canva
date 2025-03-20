@@ -15,6 +15,7 @@ const SizeInput = ({
         <InputnLabelNumber text="Width" value={dimensions.width} changeEvent={handleChange} name="width"/>
         <InputnLabelNumber text="Height" value={dimensions.height} changeEvent={handleChange} name="height"/>
       </div>
+
       {/* Tombol Create */}
       <Button>Create new design</Button>
     </div>
