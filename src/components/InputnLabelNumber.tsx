@@ -7,9 +7,9 @@ const InputnLabelNumber = ({
   name
 }: {
   text: string;
-  value: any;
+  value: number;
   name:string;
-  changeEvent: (e: any) => void;
+  changeEvent: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
   return (
     <div className="flex flex-col gap-4">
