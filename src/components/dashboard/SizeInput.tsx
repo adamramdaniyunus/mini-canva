@@ -20,7 +20,7 @@ const SizeInput = ({
       height: Number(dimensions.height),
     });
 
-    router.push("/create");
+    router.push("/design/1/edit");
   };
 
   return (

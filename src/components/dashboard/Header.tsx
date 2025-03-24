@@ -14,7 +14,7 @@ export default function Header() {
 
   const handleCreateNewDesign = () => {
     setState({width: 400, height: 400});
-    router.push('/create');
+    router.push("/design/1/edit");
   }
 
   const handleShowMenu = () => {

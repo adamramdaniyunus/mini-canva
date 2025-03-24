@@ -11,7 +11,7 @@ const CreateModules = () => {
     type: "rect",
     id: Math.floor(Math.random() * 100 + 1),
     height: state?.height || 400,
-    width: state?.width || 400,
+    width: state?.width || 500,
     z_index: 1,
     color: "#DBDBDB",
     image: "",
@@ -41,7 +41,7 @@ const CreateModules = () => {
   };
 
   return (
-    <div className="h-screen w-screen flex justify-center items-center relative">
+    <div className="flex justify-center items-center relative">
       <div ref={ref} className="relative w-auto h-auto overflow-auto">
         <div>
             {DesinComponent()}
