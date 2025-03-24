@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { BiFolder } from "react-icons/bi";
 import { IoIosArrowBack } from "react-icons/io";
 import { LuImage, LuLayoutTemplate, LuShapes } from "react-icons/lu";
