@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import React, { Suspense, useState } from "react";
+import React, { useState } from "react";
 import { AiOutlineLoading } from "react-icons/ai";
 import { BiFolder } from "react-icons/bi";
 import { IoIosArrowBack } from "react-icons/io";
