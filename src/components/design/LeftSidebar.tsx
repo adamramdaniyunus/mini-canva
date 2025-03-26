@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import React, { useState } from "react";
+import React, { ComponentType, useState } from "react";
 import { AiOutlineLoading } from "react-icons/ai";
 import { BiFolder } from "react-icons/bi";
 import { IoIosArrowBack } from "react-icons/io";
@@ -60,10 +60,14 @@ const LeftSidebar = () => {
     },
   ];
 
-  const components: any = {
+  const components: Record<string, ComponentType> = {
     design: dynamic(() => import("./DesignTemplate"), {
       ssr: false,
-      loading: () => <div className="flex justify-center items-center h-full p-4"><AiOutlineLoading className="text-4xl animate-spin"/></div>,
+      loading: () => (
+        <div className="flex justify-center items-center h-full p-4">
+          <AiOutlineLoading className="text-4xl animate-spin" />
+        </div>
+      ),
     }),
     shape: () => <div>Shapes Content</div>,
     download: () => <div>Download Content</div>,
@@ -73,7 +77,7 @@ const LeftSidebar = () => {
     background: () => <div>Background Content</div>,
   };
 
-  const ComponentToRender = components[state];
+  const ComponentToRender = components[state] || (() => <div>Not Found</div>);
 
   return (
     <main className="relative">
