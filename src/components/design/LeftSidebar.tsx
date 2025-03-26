@@ -1,5 +1,4 @@
 "use client";
-
 import dynamic from "next/dynamic";
 import React, { ComponentType, useState } from "react";
 import { AiOutlineLoading } from "react-icons/ai";
@@ -14,6 +13,14 @@ import { motion } from "framer-motion";
 const LeftSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [state, setState] = useState("");
+
+  const loader = () => {
+    return (
+      <div className="flex justify-center items-center h-full p-4">
+        <AiOutlineLoading className="text-4xl animate-spin" />
+      </div>
+    );
+  };
 
   const handleShowFeature = (state = "") => {
     setState(state);
@@ -63,13 +70,12 @@ const LeftSidebar = () => {
   const components: Record<string, ComponentType> = {
     design: dynamic(() => import("./DesignTemplate"), {
       ssr: false,
-      loading: () => (
-        <div className="flex justify-center items-center h-full p-4">
-          <AiOutlineLoading className="text-4xl animate-spin" />
-        </div>
-      ),
+      loading: () => loader(),
     }),
-    shape: () => <div>Shapes Content</div>,
+    shape: dynamic(() => import("./ShapesTemplate"), {
+      ssr: false,
+      loading: () => loader(),
+    }),
     download: () => <div>Download Content</div>,
     text: () => <div>Text Content</div>,
     project: () => <div>Project Content</div>,
@@ -77,7 +83,7 @@ const LeftSidebar = () => {
     background: () => <div>Background Content</div>,
   };
 
-  const ComponentToRender = components[state] || (() => <div>Not Found</div>);
+  const ComponentToRender = components[state] || components["design"];
 
   return (
     <main className="relative">
@@ -108,14 +114,18 @@ const LeftSidebar = () => {
       </aside>
       <div
         className={`bg-white shadow-md w-72 absolute  h-full top-0 transition-all ease-in-out duration-500 z-30 ${
-          isOpen ? "left-20" : "-left-[300px] -z-1"
+          isOpen ? "left-20" : "-left-[205px] -z-1"
         }`}
       >
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="absolute -right-[10px] top-1/2 transform -translate-y-1/2 bg-gray-100 active:scale-90 transition-all duration-300 h-20 rounded-r-lg"
         >
-          <IoIosArrowBack />
+          <IoIosArrowBack
+            className={`${
+              isOpen ? "rotate-0" : "rotate-180"
+            } transition-all duration-700`}
+          />
         </button>
         {ComponentToRender && <ComponentToRender />}
       </div>

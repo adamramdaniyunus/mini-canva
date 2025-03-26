@@ -10,12 +10,14 @@ export default function Header() {
   const menuRef = useRef<HTMLDivElement | null>(null); // ⬅️ Ref untuk menu
   const imgRef = useRef<HTMLImageElement | null>(null); // ⬅️ Ref untuk img profile
   const router = useRouter();
-  const { setState } = useDesignState();
+  const { setState, setLoading, isLoading } = useDesignState();
 
   const handleCreateNewDesign = () => {
-    setState({width: 400, height: 400});
+    setLoading(true);
+    setState({ width: 400, height: 400 });
     router.push("/design/1/edit");
-  }
+    setLoading(false);
+  };
 
   const handleShowMenu = () => {
     setShowMenu((prev) => !prev);
@@ -46,7 +48,9 @@ export default function Header() {
           Mi<span className="text-blue-500">Va</span>
         </h1>
         <div className="flex gap-4 items-center relative">
-          <Button onClick={handleCreateNewDesign}>Create Design</Button>
+          <Button disabled={isLoading} onClick={handleCreateNewDesign}>
+            {isLoading ? "Loading" : "Create new design"}
+          </Button>
           <img
             ref={imgRef} // ⬅️ Tambahkan ref ke img
             onClick={handleShowMenu}
