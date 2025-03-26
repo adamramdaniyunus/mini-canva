@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import dynamic from "next/dynamic";
+import React, { Suspense, useState } from "react";
+import { AiOutlineLoading } from "react-icons/ai";
 import { BiFolder } from "react-icons/bi";
 import { IoIosArrowBack } from "react-icons/io";
 import { LuImage, LuLayoutTemplate, LuShapes } from "react-icons/lu";
 import { MdCloudDownload } from "react-icons/md";
 import { TbBackground } from "react-icons/tb";
 import { TfiText } from "react-icons/tfi";
+import { motion } from "framer-motion";
 
 const LeftSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -57,21 +60,50 @@ const LeftSidebar = () => {
     },
   ];
 
-  return (
-    <aside className="w-20 bg-white relative shadow-md flex flex-col items-center py-4 space-y-6">
-      {items.map((item, i) => (
-        <button
-          onClick={() => handleShowFeature(item.state)}
-          key={i}
-          className="w-auto hover:opacity-50 cursor-pointer items-center h-10 flex flex-col rounded-lg"
-        >
-          {item.icon}
-          <p className="text-xs">{item.text}</p>
-        </button>
-      ))}
+  const components: any = {
+    design: dynamic(() => import("./DesignTemplate"), {
+      ssr: false,
+      loading: () => <div className="flex justify-center items-center h-full p-4"><AiOutlineLoading className="text-4xl animate-spin"/></div>,
+    }),
+    shape: () => <div>Shapes Content</div>,
+    download: () => <div>Download Content</div>,
+    text: () => <div>Text Content</div>,
+    project: () => <div>Project Content</div>,
+    image: () => <div>Image Content</div>,
+    background: () => <div>Background Content</div>,
+  };
 
+  const ComponentToRender = components[state];
+
+  return (
+    <main className="relative">
+      <aside className="w-20 bg-white relative shadow-md flex z-50 flex-col items-center py-4 space-y-6 h-full">
+        {items.map((item, i) => (
+          <button
+            onClick={() => handleShowFeature(item.state)}
+            key={i}
+            className={`relative w-full hover:opacity-50 cursor-pointer items-center p-4 h-auto flex flex-col rounded-lg transition-all duration-300 ${
+              state === item.state && "text-white"
+            }`}
+          >
+            {/* Animasi Indicator */}
+            {state === item.state && (
+              <motion.div
+                layoutId="activeButton"
+                className="absolute inset-0 bg-blue-500 rounded-lg"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
+              />
+            )}
+
+            <span className="relative z-10">{item.icon}</span>
+            <p className="relative z-10 text-xs">{item.text}</p>
+          </button>
+        ))}
+      </aside>
       <div
-        className={`bg-white shadow-md w-72 absolute  h-full top-0 transition-all ease-in-out duration-500 ${
+        className={`bg-white shadow-md w-72 absolute  h-full top-0 transition-all ease-in-out duration-500 z-30 ${
           isOpen ? "left-20" : "-left-[300px] -z-1"
         }`}
       >
@@ -81,9 +113,9 @@ const LeftSidebar = () => {
         >
           <IoIosArrowBack />
         </button>
-        {state}
+        {ComponentToRender && <ComponentToRender />}
       </div>
-    </aside>
+    </main>
   );
 };
 
