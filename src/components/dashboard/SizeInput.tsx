@@ -11,16 +11,18 @@ const SizeInput = ({
   dimensions: { width: string; height: string };
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
-  const { setState } = useDesignState();
+  const { setState, setLoading, isLoading } = useDesignState();
   const router = useRouter();
 
   const CreatNewDesign = () => {
+    setLoading(true);
     setState({
       width: Number(dimensions.width),
       height: Number(dimensions.height),
     });
-
+    
     router.push("/design/1/edit");
+    setLoading(false);
   };
 
   return (
@@ -41,7 +43,9 @@ const SizeInput = ({
       </div>
 
       {/* Tombol Create */}
-      <Button onClick={CreatNewDesign}>Create new design</Button>
+      <Button disabled={isLoading} onClick={CreatNewDesign}>
+        {isLoading ? "Loading" : "Create new design"}
+      </Button>
     </div>
   );
 };
