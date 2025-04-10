@@ -1,10 +1,11 @@
 import { Search } from "lucide-react";
 import React, { useState } from "react";
+import LayoutMenu from "./LayoutMenu";
 
 const ProjectContent = () => {
   const [query, setQuery] = useState("");
   return (
-    <div className="flex flex-col h-full">
+    <LayoutMenu>
       <div className="p-4 flex flex-col gap-2">
         <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 w-full max-w-sm bg-white focus-within:ring-2 focus-within:ring-blue-500">
           <Search className="h-4 w-4 text-gray-500 mr-2" />
@@ -35,7 +36,7 @@ const ProjectContent = () => {
           ))}
         </div>
       </div>
-    </div>
+    </LayoutMenu>
   );
 };
 

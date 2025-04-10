@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Button from "../Button";
+import LayoutMenu from "./LayoutMenu";
 
 type ImageItem = {
   url: string;
@@ -7,7 +8,6 @@ type ImageItem = {
   height: number;
   span: string;
 };
-
 
 const images = [
   {
@@ -90,7 +90,6 @@ const groupImages = (arr: ImageItem[]) => {
   return groups;
 };
 
-
 const DownloadComponent = () => {
   const [layout, setLayout] = useState<
     { url: string; width: number; span: string; height: number }[][]
@@ -107,7 +106,7 @@ const DownloadComponent = () => {
   }, []);
 
   return (
-    <div className="flex flex-col h-full">
+    <LayoutMenu>
       <div className="p-4 flex gap-2">
         <Button>Upload Images</Button>
       </div>
@@ -127,7 +126,7 @@ const DownloadComponent = () => {
           </div>
         ))}
       </div>
-    </div>
+    </LayoutMenu>
   );
 };
 
