@@ -92,7 +92,10 @@ const LeftSidebar = () => {
       ssr: false,
       loading: () => loader(),
     }),
-    background: () => <div>Background Content</div>,
+    background: dynamic(() => import("./BackgroundContent"), {
+      ssr: false,
+      loading: () => loader(),
+    }),
   };
 
   const ComponentToRender = components[state] || components["design"];
