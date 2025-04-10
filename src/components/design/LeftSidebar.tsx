@@ -84,7 +84,10 @@ const LeftSidebar = () => {
       ssr: false,
       loading: () => loader(),
     }),
-    project: () => <div>Project Content</div>,
+    project: dynamic(() => import("./ProjectContent"), {
+      ssr: false,
+      loading: () => loader(),
+    }),
     image: () => <div>Image Content</div>,
     background: () => <div>Background Content</div>,
   };
