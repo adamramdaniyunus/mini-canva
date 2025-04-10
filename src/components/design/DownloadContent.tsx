@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import Button from "../Button";
 
+type ImageItem = {
+  url: string;
+  width: number;
+  height: number;
+  span: string;
+};
+
+
 const images = [
   {
     url: "https://i.pinimg.com/736x/7a/31/0b/7a310b0c2a46cc3eae1c8092999b3c89.jpg",
@@ -47,9 +55,9 @@ const images = [
 // Fungsi untuk membentuk kelompok gambar dengan aturan:
 // - Maksimal 3 gambar per kelompok
 // - Jika dalam satu kelompok sudah ada 2 landscape, langsung buat kelompok baru
-const groupImages = (arr: any[]) => {
-  const groups: any[][] = [];
-  let tempGroup: any[] = [];
+const groupImages = (arr: ImageItem[]) => {
+  const groups: ImageItem[][] = [];
+  let tempGroup: ImageItem[] = [];
   let landscapeCount = 0;
 
   for (const img of arr) {
