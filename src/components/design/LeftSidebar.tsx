@@ -76,7 +76,10 @@ const LeftSidebar = () => {
       ssr: false,
       loading: () => loader(),
     }),
-    download: () => <div>Download Content</div>,
+    download: dynamic(() => import("./DownloadContent"), {
+      ssr: false,
+      loading: () => loader(),
+    }),
     text: () => <div>Text Content</div>,
     project: () => <div>Project Content</div>,
     image: () => <div>Image Content</div>,
