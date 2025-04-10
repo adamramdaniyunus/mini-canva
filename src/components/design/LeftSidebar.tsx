@@ -88,7 +88,10 @@ const LeftSidebar = () => {
       ssr: false,
       loading: () => loader(),
     }),
-    image: () => <div>Image Content</div>,
+    image: dynamic(() => import("./ImageContent"), {
+      ssr: false,
+      loading: () => loader(),
+    }),
     background: () => <div>Background Content</div>,
   };
 
