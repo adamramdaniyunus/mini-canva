@@ -80,7 +80,10 @@ const LeftSidebar = () => {
       ssr: false,
       loading: () => loader(),
     }),
-    text: () => <div>Text Content</div>,
+    text: dynamic(() => import("./FontTextLists"), {
+      ssr: false,
+      loading: () => loader(),
+    }),
     project: () => <div>Project Content</div>,
     image: () => <div>Image Content</div>,
     background: () => <div>Background Content</div>,
