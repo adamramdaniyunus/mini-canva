@@ -69,7 +69,7 @@ const FontTextLists = () => {
           <Search className="h-4 w-4 text-gray-500 mr-2" />
           <input
             type="text"
-            placeholder="Cari font dan kombinasi"
+            placeholder="Search Font"
             className="w-full outline-none text-sm placeholder-gray-400"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
