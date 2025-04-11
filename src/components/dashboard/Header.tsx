@@ -4,6 +4,7 @@ import Button from "@/components/Button";
 import { useDesignState } from "@/context/DesignContext";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import { signOut } from "next-auth/react";
 
 export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
@@ -21,6 +22,10 @@ export default function Header() {
 
   const handleShowMenu = () => {
     setShowMenu((prev) => !prev);
+  };
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/" });
   };
 
   useEffect(() => {
@@ -67,7 +72,7 @@ export default function Header() {
             } duration-300 transition-all right-0 -bottom-[40px]`}
           >
             <div className="flex flex-col items-center">
-              <button className="cursor-pointer active:opacity-80 text-sm transition-all duration-300">
+              <button onClick={handleLogout} className="cursor-pointer active:opacity-80 text-sm transition-all duration-300">
                 Logout
               </button>
             </div>

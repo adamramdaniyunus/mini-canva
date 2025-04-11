@@ -16,6 +16,10 @@ const Register = () => {
     setModal(false);
   };
 
+  const handleGoogleLogin = async () => {
+    await signIn("google");
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -92,7 +96,7 @@ const Register = () => {
 
         {/* Social Login */}
         <div className="space-y-2">
-          <Button BG="bg-black hover:bg-gray-500">
+          <Button BG="bg-black hover:bg-gray-500" onClick={handleGoogleLogin}>
             <span className="text-lg">
               <BsGoogle />
             </span>{" "}
