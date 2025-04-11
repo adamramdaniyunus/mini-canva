@@ -1,15 +1,45 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { IoMdClose } from "react-icons/io";
 import Button from "../Button";
 import { BsGoogle } from "react-icons/bs";
 import { useModalState } from "@/context/ModalContext";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const Register = () => {
   const { isOpen, setModal } = useModalState();
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
   const closeModal = () => {
     setModal(false);
   };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
+    setLoading(false);
+
+    console.log(result);
+
+    if (result?.error) {
+      alert("Invalid credentials");
+    } else {
+      router.push("/dashboard");
+    }
+  };
+
   return (
     <div
       className={`fixed ${
@@ -29,10 +59,11 @@ const Register = () => {
         </div>
 
         {/* Form */}
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm mb-1">Email</label>
             <input
+              name="email"
               type="email"
               placeholder="email"
               className="w-full px-3 py-2 rounded-md bg-white border border-gray-700 focus:outline-none"
@@ -41,15 +72,16 @@ const Register = () => {
           <div>
             <label className="block text-sm mb-1">Password</label>
             <input
+              name="password"
               type="password"
               placeholder="password"
               className="w-full px-3 py-2 rounded-md bg-white border border-gray-700 focus:outline-none"
             />
           </div>
-          <Button>
-            Sign in
+          <Button type="submit" disabled={loading}>
+            {loading ? "Loading..." : "Sign in"}
           </Button>
-        </div>
+        </form>
 
         {/* Separator */}
         <div className="flex items-center my-4">

@@ -2,6 +2,7 @@ import React from "react";
 
 const Button = ({
   children,
+  type,
   onClick,
   BG,
   disabled
@@ -10,9 +11,11 @@ const Button = ({
   onClick?: () => void;
   BG?: string;
   disabled?:boolean
+  type?: "button" | "submit" | "reset";
 }) => {
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       className={`px-4 flex items-center justify-center gap-2 w-full py-2 text-sm cursor-pointer active:scale-95 transition-all duration-300  text-white rounded-sm ${
