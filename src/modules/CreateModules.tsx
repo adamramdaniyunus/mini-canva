@@ -1,50 +1,56 @@
-"use client";
-import { useDesignState } from "@/context/DesignContext";
 import React, { useRef } from "react";
 
-const CreateModules = () => {
+
+const CreateModules = ({ components, handleClickElement }: { components: ElementComponent[], handleClickElement: (element:ElementComponent) => void; }) => {
   const ref = useRef<HTMLDivElement>(null);
-  const { state } = useDesignState();
 
-  const obj = {
-    name: "main_frame",
-    type: "rect",
-    id: Math.floor(Math.random() * 100 + 1),
-    height: state?.height || 400,
-    width: state?.width || 500,
-    z_index: 1,
-    color: "#DBDBDB",
-    image: "",
-  };
+  const mainFrame = components.find((c) => c.name === "main_frame");
+  const otherComponents = components.filter((c) => c.name !== "main_frame");
 
-  const DesinComponent = () => {
-    let html = <></>;
-    if (obj.name == "main_frame") {
-      html = (
-        <div
-          className="hover:border-[2px] hover:border-indigo-400 shadow-md"
-          style={{
-            width: obj.width,
-            height: obj.height,
-            background: obj.color,
-            zIndex: obj.z_index,
-          }}
-        >
-          {obj.image && (
-            <img className="w-full h-full" src={obj.image} alt="image" />
-          )}
-        </div>
-      );
-    }
-
-    return html;
-  };
+  if (!mainFrame) return <div>No main frame found.</div>;
 
   return (
     <div className="flex justify-center items-center relative">
       <div ref={ref} className="relative w-auto h-auto overflow-auto">
-        <div>
-            {DesinComponent()}
+        <div
+          className="relative hover:border-[2px] hover:border-indigo-400 shadow-md"
+          style={{
+            width: mainFrame.width,
+            height: mainFrame.height,
+            background: mainFrame.color,
+            zIndex: mainFrame.z_index,
+          }}
+        >
+          {/* If there's a background image */}
+          {mainFrame.image && (
+            <img
+              className="w-full h-full object-cover"
+              src={mainFrame.image}
+              alt="canvas"
+            />
+          )}
+
+          {/* Render shapes or other components inside main_frame */}
+          {otherComponents.map((component) => {
+            if (component.name === "rect" && component.type === "shape") {
+              return (
+                <div
+                  onClick={() => handleClickElement(component)}
+                  key={component.id}
+                  className="absolute hover:border-[2px] hover:border-indigo-400"
+                  style={{
+                    width: component.width + "px",
+                    height: component.height + "px",
+                    background: component.color,
+                    zIndex: component.z_index,
+                    top: component.top,
+                    left: component.left,
+                  }}
+                ></div>
+              );
+            }
+            return null;
+          })}
         </div>
       </div>
     </div>
