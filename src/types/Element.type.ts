@@ -1,4 +1,4 @@
-type ElementComponent = {
+export type ElementComponent = {
   id: number;
   name: string;
   type: string;

@@ -10,13 +10,17 @@ import { TbBackground } from "react-icons/tb";
 import { TfiText } from "react-icons/tfi";
 import { motion } from "framer-motion";
 
+interface SidebarComponentProps {
+  createShapes: (name: string, type: string) => void;
+}
+
 const loader = () => (
   <div className="flex justify-center items-center h-full p-4">
     <AiOutlineLoading className="text-4xl animate-spin" />
   </div>
 );
 
-const components: Record<string, ComponentType<any>> = {
+const components: Record<string, ComponentType<SidebarComponentProps>> = {
   design: dynamic(() => import("./DesignTemplate"), {
     ssr: false,
     loading: () => loader(),

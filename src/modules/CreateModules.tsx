@@ -1,4 +1,6 @@
+"use client";
 import React, { useRef } from "react";
+import { ElementComponent } from "@/types/Element.type";
 
 
 const CreateModules = ({ components, handleClickElement }: { components: ElementComponent[], handleClickElement: (element:ElementComponent) => void; }) => {

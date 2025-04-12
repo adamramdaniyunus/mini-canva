@@ -5,6 +5,7 @@ import RightSidebar from "@/components/design/RightSidebar";
 import CreateModules from "./CreateModules";
 import { useDesignState } from "@/context/DesignContext";
 import { useState } from "react";
+import { ElementComponent } from "@/types/Element.type";
 
 export default function DesignModules() {
   const { state } = useDesignState();

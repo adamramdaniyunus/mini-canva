@@ -17,7 +17,7 @@ export default function HomeModules() {
     return () => {
       window.removeEventListener("keydown", handleEscapeEvent);
     };
-  }, []);
+  }, [setModal]);
 
   return (
     <>
