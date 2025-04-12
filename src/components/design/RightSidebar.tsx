@@ -1,11 +1,17 @@
 import React from 'react'
 
-const RightSidebar = () => {
+const RightSidebar = ({changeColor} : {changeColor: (e:string) => void;}) => {
+
+  // Function to handle color change
+  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    changeColor(e.target.value);
+  };
+
   return (
-    <aside className="w-64 shadow-md p-4 space-y-4 md:block hidden">
+    <aside className="w-64 shadow-md p-4 space-y-4 md:block hidden h-full">
       <div className="flex gap-4 items-center">
         <p className="text-sm">Color :</p>
-        <input type="color" className="w-10 h-10" />
+        <input type="color" onChange={handleColorChange} className="w-10 h-10" />
       </div>
       <div className="flex gap-4 items-center">
         <p className="text-sm">Radius :</p>

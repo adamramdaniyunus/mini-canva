@@ -10,17 +10,50 @@ import { TbBackground } from "react-icons/tb";
 import { TfiText } from "react-icons/tfi";
 import { motion } from "framer-motion";
 
-const LeftSidebar = () => {
+interface SidebarComponentProps {
+  createShapes: (name: string, type: string) => void;
+}
+
+const loader = () => (
+  <div className="flex justify-center items-center h-full p-4">
+    <AiOutlineLoading className="text-4xl animate-spin" />
+  </div>
+);
+
+const components: Record<string, ComponentType<SidebarComponentProps>> = {
+  design: dynamic(() => import("./DesignTemplate"), {
+    ssr: false,
+    loading: () => loader(),
+  }),
+  shape: dynamic(() => import("./ShapesTemplate"), {
+    ssr: false,
+    loading: () => loader(),
+  }),
+  download: dynamic(() => import("./DownloadContent"), {
+    ssr: false,
+    loading: () => loader(),
+  }),
+  text: dynamic(() => import("./FontTextLists"), {
+    ssr: false,
+    loading: () => loader(),
+  }),
+  project: dynamic(() => import("./ProjectContent"), {
+    ssr: false,
+    loading: () => loader(),
+  }),
+  image: dynamic(() => import("./ImageContent"), {
+    ssr: false,
+    loading: () => loader(),
+  }),
+  background: dynamic(() => import("./BackgroundContent"), {
+    ssr: false,
+    loading: () => loader(),
+  }),
+};
+
+const LeftSidebar = ({createShapes} : {createShapes: (name: string, type:string) => void;}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [state, setState] = useState("");
-
-  const loader = () => {
-    return (
-      <div className="flex justify-center items-center h-full p-4">
-        <AiOutlineLoading className="text-4xl animate-spin" />
-      </div>
-    );
-  };
 
   const handleShowFeature = (state = "") => {
     setState(state);
@@ -67,37 +100,6 @@ const LeftSidebar = () => {
     },
   ];
 
-  const components: Record<string, ComponentType> = {
-    design: dynamic(() => import("./DesignTemplate"), {
-      ssr: false,
-      loading: () => loader(),
-    }),
-    shape: dynamic(() => import("./ShapesTemplate"), {
-      ssr: false,
-      loading: () => loader(),
-    }),
-    download: dynamic(() => import("./DownloadContent"), {
-      ssr: false,
-      loading: () => loader(),
-    }),
-    text: dynamic(() => import("./FontTextLists"), {
-      ssr: false,
-      loading: () => loader(),
-    }),
-    project: dynamic(() => import("./ProjectContent"), {
-      ssr: false,
-      loading: () => loader(),
-    }),
-    image: dynamic(() => import("./ImageContent"), {
-      ssr: false,
-      loading: () => loader(),
-    }),
-    background: dynamic(() => import("./BackgroundContent"), {
-      ssr: false,
-      loading: () => loader(),
-    }),
-  };
-
   const ComponentToRender = components[state] || components["design"];
 
   return (
@@ -142,7 +144,7 @@ const LeftSidebar = () => {
             } transition-all duration-700`}
           />
         </button>
-        {ComponentToRender && <ComponentToRender />}
+        {ComponentToRender && <ComponentToRender createShapes={createShapes}/>}
       </div>
     </main>
   );
