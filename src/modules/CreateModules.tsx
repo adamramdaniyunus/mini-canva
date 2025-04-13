@@ -78,6 +78,7 @@ const CreateModules = ({ components, handleClickElement, selectedElement }: { co
                 </div>
               );
             }
+            
             if (component.name === "circle" && component.type === "shape") {
               return (
                 <div
@@ -120,6 +121,7 @@ const CreateModules = ({ components, handleClickElement, selectedElement }: { co
                 </div>
               );
             }
+
             if (component.name === "polygon" && component.type === "shape") {
               return (
                 <div
@@ -128,20 +130,27 @@ const CreateModules = ({ components, handleClickElement, selectedElement }: { co
                     handleClickElement(component);
                   }}
                   key={component.id}
-                  className={`absolute hover:border-[2px] hover:border-indigo-400 ${isSelected ? 'border-[2px] border-indigo-500' : ''}`}
+                  className={`absolute group ${isSelected ? "border-[2px] border-indigo-500" : ""}`}
                   style={{
-                    width: component.width + "px",
-                    height: component.height + "px",
-                    background: component.color,
+                    width: component.width,
+                    height: component.height,
                     zIndex: component.z_index,
                     top: component.top,
                     left: component.left,
-                    clipPath: 'polygon(50% 0, 100% 100%, 0 100%)'
                   }}
                 >
-                  {/* Resize Handles */}
+                  {/* Segitiga (hanya visual) */}
+                  <div
+                    className="w-full h-full"
+                    style={{
+                      background: component.color,
+                      clipPath: "polygon(50% 0, 100% 100%, 0 100%)",
+                    }}
+                  ></div>
+
+                  {/* Resize Handles (tetap sesuai sudut bounding box, bukan bentuk segitiga) */}
                   {isSelected && (
-                    <div className="absolute w-full h-full">
+                    <>
                       <div
                         onMouseDown={(e) => e.stopPropagation()}
                         className="w-2 h-2 bg-white border border-black absolute -top-1 -left-1 cursor-nwse-resize"
@@ -158,7 +167,7 @@ const CreateModules = ({ components, handleClickElement, selectedElement }: { co
                         onMouseDown={(e) => e.stopPropagation()}
                         className="w-2 h-2 bg-white border border-black absolute -bottom-1 -right-1 cursor-nwse-resize"
                       />
-                    </div>
+                    </>
                   )}
                 </div>
               );
