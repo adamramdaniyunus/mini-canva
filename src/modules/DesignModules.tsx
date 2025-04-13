@@ -73,7 +73,7 @@ export default function DesignModules() {
           {/* Canvas Area */}
           <div className="flex-1 flex justify-center items-center rounded-lg p-4">
             <div className="relative h-auto shadow-lg">
-              <CreateModules components={components} handleClickElement={handleClickElement} />
+              <CreateModules components={components} handleClickElement={handleClickElement} selectedElement={selectedElement}/>
             </div>
           </div>
         </div>

@@ -3,7 +3,7 @@ import React, { useRef } from "react";
 import { ElementComponent } from "@/types/Element.type";
 
 
-const CreateModules = ({ components, handleClickElement }: { components: ElementComponent[], handleClickElement: (element:ElementComponent) => void; }) => {
+const CreateModules = ({ components, handleClickElement, selectedElement }: { components: ElementComponent[], handleClickElement: (element: ElementComponent) => void; selectedElement: ElementComponent | null; }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const mainFrame = components.find((c) => c.name === "main_frame");
@@ -34,12 +34,17 @@ const CreateModules = ({ components, handleClickElement }: { components: Element
 
           {/* Render shapes or other components inside main_frame */}
           {otherComponents.map((component) => {
+            const isSelected = selectedElement?.id === component.id;
+
             if (component.name === "rect" && component.type === "shape") {
               return (
                 <div
-                  onClick={() => handleClickElement(component)}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    handleClickElement(component);
+                  }}
                   key={component.id}
-                  className="absolute hover:border-[2px] hover:border-indigo-400"
+                  className={`absolute hover:border-[2px] hover:border-indigo-400 ${isSelected ? 'border-[2px] border-indigo-500' : ''}`}
                   style={{
                     width: component.width + "px",
                     height: component.height + "px",
@@ -48,11 +53,119 @@ const CreateModules = ({ components, handleClickElement }: { components: Element
                     top: component.top,
                     left: component.left,
                   }}
-                ></div>
+                >
+                  {/* Resize Handles */}
+                  {isSelected && (
+                    <div className="absolute w-full h-full">
+                      <div
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="w-2 h-2 bg-white border border-black absolute -top-1 -left-1 cursor-nwse-resize"
+                      />
+                      <div
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="w-2 h-2 bg-white border border-black absolute -top-1 -right-1 cursor-nesw-resize"
+                      />
+                      <div
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -left-1 cursor-nesw-resize"
+                      />
+                      <div
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -right-1 cursor-nwse-resize"
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            if (component.name === "circle" && component.type === "shape") {
+              return (
+                <div
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    handleClickElement(component);
+                  }}
+                  key={component.id}
+                  className={`absolute hover:border-[2px] hover:border-indigo-400 rounded-full ${isSelected ? 'border-[2px] border-indigo-500' : ''}`}
+                  style={{
+                    width: component.width + "px",
+                    height: component.height + "px",
+                    background: component.color,
+                    zIndex: component.z_index,
+                    top: component.top,
+                    left: component.left,
+                  }}
+                >
+                  {/* Resize Handles */}
+                  {isSelected && (
+                    <div className="absolute w-full h-full">
+                      <div
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="w-2 h-2 bg-white border border-black absolute -top-1 -left-1 cursor-nwse-resize"
+                      />
+                      <div
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="w-2 h-2 bg-white border border-black absolute -top-1 -right-1 cursor-nesw-resize"
+                      />
+                      <div
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -left-1 cursor-nesw-resize"
+                      />
+                      <div
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -right-1 cursor-nwse-resize"
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            if (component.name === "polygon" && component.type === "shape") {
+              return (
+                <div
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    handleClickElement(component);
+                  }}
+                  key={component.id}
+                  className={`absolute hover:border-[2px] hover:border-indigo-400 ${isSelected ? 'border-[2px] border-indigo-500' : ''}`}
+                  style={{
+                    width: component.width + "px",
+                    height: component.height + "px",
+                    background: component.color,
+                    zIndex: component.z_index,
+                    top: component.top,
+                    left: component.left,
+                    clipPath: 'polygon(50% 0, 100% 100%, 0 100%)'
+                  }}
+                >
+                  {/* Resize Handles */}
+                  {isSelected && (
+                    <div className="absolute w-full h-full">
+                      <div
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="w-2 h-2 bg-white border border-black absolute -top-1 -left-1 cursor-nwse-resize"
+                      />
+                      <div
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="w-2 h-2 bg-white border border-black absolute -top-1 -right-1 cursor-nesw-resize"
+                      />
+                      <div
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -left-1 cursor-nesw-resize"
+                      />
+                      <div
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -right-1 cursor-nwse-resize"
+                      />
+                    </div>
+                  )}
+                </div>
               );
             }
             return null;
           })}
+
         </div>
       </div>
     </div>
