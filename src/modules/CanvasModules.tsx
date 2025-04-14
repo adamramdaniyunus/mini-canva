@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { ElementComponent } from "@/types/Element.type";
 import Rect from "@/components/design/Rect";
 import Circle from "@/components/design/Circle";
