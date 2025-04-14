@@ -1,13 +1,16 @@
 "use client";
 import React, { useRef } from "react";
 import { ElementComponent } from "@/types/Element.type";
+import Rect from "@/components/design/Rect";
 
 
-const CreateModules = ({ components, handleClickElement, selectedElement }: { components: ElementComponent[], handleClickElement: (element: ElementComponent) => void; selectedElement: ElementComponent | null; }) => {
+const CreateModules = ({ components, handleClickElement, selectedElement, updateElementPosition }: { components: ElementComponent[], handleClickElement: (element: ElementComponent) => void; selectedElement: ElementComponent | null; updateElementPosition: (id: number, top: number, left: number) => void }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const mainFrame = components.find((c) => c.name === "main_frame");
   const otherComponents = components.filter((c) => c.name !== "main_frame");
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const isDragging = useRef(false);
 
   if (!mainFrame) return <div>No main frame found.</div>;
 
@@ -37,48 +40,19 @@ const CreateModules = ({ components, handleClickElement, selectedElement }: { co
             const isSelected = selectedElement?.id === component.id;
 
             if (component.name === "rect" && component.type === "shape") {
-              return (
-                <div
-                  onMouseDown={(e) => {
-                    e.stopPropagation();
-                    handleClickElement(component);
-                  }}
-                  key={component.id}
-                  className={`absolute hover:border-[2px] hover:border-indigo-400 ${isSelected ? 'border-[2px] border-indigo-500' : ''}`}
-                  style={{
-                    width: component.width + "px",
-                    height: component.height + "px",
-                    background: component.color,
-                    zIndex: component.z_index,
-                    top: component.top,
-                    left: component.left,
-                  }}
-                >
-                  {/* Resize Handles */}
-                  {isSelected && (
-                    <div className="absolute w-full h-full">
-                      <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -top-1 -left-1 cursor-nwse-resize"
-                      />
-                      <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -top-1 -right-1 cursor-nesw-resize"
-                      />
-                      <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -left-1 cursor-nesw-resize"
-                      />
-                      <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -right-1 cursor-nwse-resize"
-                      />
-                    </div>
-                  )}
-                </div>
-              );
+              return <Rect
+                component={component}
+                dragOffset={dragOffset}
+                handleClickElement={handleClickElement}
+                isDragging={isDragging}
+                updateElementPosition={updateElementPosition}
+                isSelected={isSelected}
+                ref={ref}
+                key={component.id}
+              />
             }
-            
+
+
             if (component.name === "circle" && component.type === "shape") {
               return (
                 <div
