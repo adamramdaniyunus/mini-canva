@@ -3,8 +3,19 @@ import React, { useRef } from "react";
 import { ElementComponent } from "@/types/Element.type";
 import Rect from "@/components/design/Rect";
 import Circle from "@/components/design/Circle";
+import Polygon from "@/components/design/Polygon";
 
-const CreateModules = ({ components, handleClickElement, selectedElement, updateElementPosition }: { components: ElementComponent[], handleClickElement: (element: ElementComponent) => void; selectedElement: ElementComponent | null; updateElementPosition: (id: number, top: number, left: number) => void }) => {
+const CreateModules = ({
+  components,
+  handleClickElement,
+  selectedElement,
+  updateElementPosition
+}: {
+  components: ElementComponent[],
+  handleClickElement: (element: ElementComponent) => void;
+  selectedElement: ElementComponent | null;
+  updateElementPosition: (id: number, top: number, left: number) => void
+}) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const mainFrame = components.find((c) => c.name === "main_frame");
@@ -52,7 +63,6 @@ const CreateModules = ({ components, handleClickElement, selectedElement, update
               />
             }
 
-
             if (component.name === "circle" && component.type === "shape") {
               return <Circle
                 component={component}
@@ -66,53 +76,16 @@ const CreateModules = ({ components, handleClickElement, selectedElement, update
             }
 
             if (component.name === "polygon" && component.type === "shape") {
-              return (
-                <div
-                  onMouseDown={(e) => {
-                    e.stopPropagation();
-                    handleClickElement(component);
-                  }}
-                  key={component.id}
-                  className={`absolute group ${isSelected ? "border-[2px] border-indigo-500" : ""}`}
-                  style={{
-                    width: component.width,
-                    height: component.height,
-                    zIndex: component.z_index,
-                    top: component.top,
-                    left: component.left,
-                  }}
-                >
-                  <div
-                    className="w-full h-full"
-                    style={{
-                      background: component.color,
-                      clipPath: "polygon(50% 0, 100% 100%, 0 100%)",
-                    }}
-                  ></div>
-
-                  {/* Resize Handles (tetap sesuai sudut bounding box, bukan bentuk segitiga) */}
-                  {isSelected && (
-                    <>
-                      <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -top-1 -left-1 cursor-nwse-resize"
-                      />
-                      <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -top-1 -right-1 cursor-nesw-resize"
-                      />
-                      <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -left-1 cursor-nesw-resize"
-                      />
-                      <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -right-1 cursor-nwse-resize"
-                      />
-                    </>
-                  )}
-                </div>
-              );
+              return <Polygon
+                component={component}
+                dragOffset={dragOffset}
+                handleClickElement={handleClickElement}
+                isDragging={isDragging}
+                updateElementPosition={updateElementPosition}
+                isSelected={isSelected}
+                ref={ref}
+                key={component.id}
+              />
             }
             return null;
           })}
