@@ -29,21 +29,22 @@ const Canvas = ({
   const dragOffset = useRef({ x: 0, y: 0 });
   const isDragging = useRef(false);
 
-  if (!mainFrame) return <div>No main frame found.</div>;
-
+  
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setSelectedElement(null);
       }
     };
-
+    
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [])
-
+  }, []);
+  
+  if (!mainFrame) return <div>No main frame found.</div>;
+  
   return (
     <div className="flex justify-center items-center relative">
       <div ref={ref} className="relative w-auto h-auto overflow-auto">
