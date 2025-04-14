@@ -60,6 +60,14 @@ export default function DesignModules() {
     setComponents(updatedComponents);
   }
 
+  const updateElementPosition = (id: number, top: number, left: number) => {
+    setComponents((prev) =>
+      prev.map((c) =>
+        c.id === id ? { ...c, top: Math.max(0, top), left: Math.max(0, left) } : c
+      )
+    );
+  };
+
   return (
     <div className="h-screen flex flex-col">
       <Header />
@@ -73,7 +81,7 @@ export default function DesignModules() {
           {/* Canvas Area */}
           <div className="flex-1 flex justify-center items-center rounded-lg p-4">
             <div className="relative h-auto shadow-lg">
-              <CreateModules components={components} handleClickElement={handleClickElement} selectedElement={selectedElement}/>
+              <CreateModules components={components} updateElementPosition={updateElementPosition} handleClickElement={handleClickElement} selectedElement={selectedElement}/>
             </div>
           </div>
         </div>
