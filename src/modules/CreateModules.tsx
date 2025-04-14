@@ -2,7 +2,7 @@
 import React, { useRef } from "react";
 import { ElementComponent } from "@/types/Element.type";
 import Rect from "@/components/design/Rect";
-
+import Circle from "@/components/design/Circle";
 
 const CreateModules = ({ components, handleClickElement, selectedElement, updateElementPosition }: { components: ElementComponent[], handleClickElement: (element: ElementComponent) => void; selectedElement: ElementComponent | null; updateElementPosition: (id: number, top: number, left: number) => void }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -54,46 +54,15 @@ const CreateModules = ({ components, handleClickElement, selectedElement, update
 
 
             if (component.name === "circle" && component.type === "shape") {
-              return (
-                <div
-                  onMouseDown={(e) => {
-                    e.stopPropagation();
-                    handleClickElement(component);
-                  }}
-                  key={component.id}
-                  className={`absolute hover:border-[2px] hover:border-indigo-400 rounded-full ${isSelected ? 'border-[2px] border-indigo-500' : ''}`}
-                  style={{
-                    width: component.width + "px",
-                    height: component.height + "px",
-                    background: component.color,
-                    zIndex: component.z_index,
-                    top: component.top,
-                    left: component.left,
-                  }}
-                >
-                  {/* Resize Handles */}
-                  {isSelected && (
-                    <div className="absolute w-full h-full">
-                      <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -top-1 -left-1 cursor-nwse-resize"
-                      />
-                      <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -top-1 -right-1 cursor-nesw-resize"
-                      />
-                      <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -left-1 cursor-nesw-resize"
-                      />
-                      <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -right-1 cursor-nwse-resize"
-                      />
-                    </div>
-                  )}
-                </div>
-              );
+              return <Circle
+                component={component}
+                dragOffset={dragOffset}
+                handleClickElement={handleClickElement}
+                isDragging={isDragging}
+                updateElementPosition={updateElementPosition}
+                isSelected={isSelected}
+                ref={ref}
+                key={component.id} />
             }
 
             if (component.name === "polygon" && component.type === "shape") {
@@ -113,7 +82,6 @@ const CreateModules = ({ components, handleClickElement, selectedElement, update
                     left: component.left,
                   }}
                 >
-                  {/* Segitiga (hanya visual) */}
                   <div
                     className="w-full h-full"
                     style={{
