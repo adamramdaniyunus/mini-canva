@@ -1,5 +1,9 @@
 import { ElementComponent } from '@/types/Element.type';
 import React from 'react'
+import { throttle } from 'lodash';
+import ResizeButton from './ResizeButton';
+
+const THROTTLE_INTERVAL = 16; // 60 FPS
 
 const Polygon = ({
     component,
@@ -8,7 +12,8 @@ const Polygon = ({
     isDragging,
     updateElementPosition,
     isSelected,
-    ref
+    ref,
+    setDrawerPosition
 }: {
     component: ElementComponent,
     handleClickElement: (element: ElementComponent) => void,
@@ -17,6 +22,7 @@ const Polygon = ({
     updateElementPosition: (id: number, top: number, left: number) => void,
     isSelected: boolean,
     ref: React.RefObject<HTMLDivElement | null>;
+    setDrawerPosition: React.Dispatch<React.SetStateAction<{ top: number | null; left: number | null }>>
 }) => {
 
     const handleMouseDown = (e: React.MouseEvent) => {
@@ -34,7 +40,7 @@ const Polygon = ({
 
         isDragging.current = true;
 
-        const handleMouseMove = (moveEvent: MouseEvent) => {
+        const handleMouseMove = throttle((moveEvent: MouseEvent) => {
             if (!isDragging.current) return;
 
             const newLeft = moveEvent.clientX - dragOffset.current.x;
@@ -45,10 +51,12 @@ const Polygon = ({
             const relativeTop = newTop - (parentRect?.top || 0);
 
             updateElementPosition(component.id, relativeTop, relativeLeft);
-        };
+            setDrawerPosition({ top: relativeTop, left: relativeLeft });
+        }, THROTTLE_INTERVAL);
 
         const handleMouseUp = () => {
             isDragging.current = false;
+            setDrawerPosition({ top: null, left: null }); // Clear drawer lines
             document.removeEventListener("mousemove", handleMouseMove);
             document.removeEventListener("mouseup", handleMouseUp);
         };
@@ -79,26 +87,7 @@ const Polygon = ({
                 }}
             ></div>
             {/* Resize Handles */}
-            {isSelected && (
-                <>
-                    <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -top-1 -left-1 cursor-nwse-resize"
-                    />
-                    <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -top-1 -right-1 cursor-nesw-resize"
-                    />
-                    <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -left-1 cursor-nesw-resize"
-                    />
-                    <div
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="w-2 h-2 bg-white border border-black absolute -bottom-1 -right-1 cursor-nwse-resize"
-                    />
-                </>
-            )}
+            {isSelected && <ResizeButton />}
         </div>
     )
 }
