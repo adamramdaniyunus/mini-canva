@@ -14,7 +14,7 @@ export default function DesignModules() {
   // Function to get selected element
   const handleClickElement = (element: ElementComponent) => {
     if(element === selectedElement) {
-      setSelectedElement(null);
+      setSelectedElement(element);
     }
     else {
       setSelectedElement(element);
