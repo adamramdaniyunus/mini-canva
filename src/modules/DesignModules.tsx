@@ -4,23 +4,24 @@ import LeftSidebar from "@/components/design/LeftSidebar";
 import RightSidebar from "@/components/design/RightSidebar";
 import Canvas from "./CanvasModules";
 import { useDesignState } from "@/context/DesignContext";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ElementComponent } from "@/types/Element.type";
+import { throttle } from "lodash";
 
 const SNAP_THRESHOLD = 5; // jarak maksimal untuk snap
 export default function DesignModules() {
   const { state } = useDesignState();
   const [selectedElement, setSelectedElement] = useState<ElementComponent | null>(null);
-  const rightSidebarRef = useRef<HTMLDivElement| null>(null);
+  const rightSidebarRef = useRef<HTMLDivElement | null>(null);
   const canvasWrapperRef = useRef<HTMLDivElement>(null);
-  
+
   // drawer feature
   const [drawerPosition, setDrawerPosition] = useState<{ top: number | null, left: number | null }>({ top: null, left: null });
 
   // Function to get selected element
   const handleClickElement = (element: ElementComponent) => {
     if (element === selectedElement) {
-      setSelectedElement(element);
+      setSelectedElement(selectedElement);
     }
     else {
       setSelectedElement(element);
@@ -58,16 +59,20 @@ export default function DesignModules() {
     setComponents((prev) => [...prev, newComponent]);
   }
 
-  const changeColor = (color: string) => {
-    const updatedComponents = components.map((component) => {
-      if (selectedElement && component.id === selectedElement.id) {
-        return { ...component, color: color };
-      }
-      return component;
-    });
-    setComponents(updatedComponents);
-  }
-
+  const changeColor = useMemo(
+    () =>
+      throttle((color: string) => {
+        setComponents((prevComponents) =>
+          prevComponents.map((component) => {
+            if (selectedElement && component.id === selectedElement.id) {
+              return { ...component, color: color };
+            }
+            return component;
+          })
+        );
+      }, 500),
+    [selectedElement]
+  );
 
   const updateElementPosition = (id: number, newTop: number, newLeft: number) => {
     const movingElement = components.find(c => c.id === id);
@@ -142,12 +147,12 @@ export default function DesignModules() {
     const handleClickOutside = (e: MouseEvent) => {
       const isOutsideCanvas = !canvasWrapperRef.current?.contains(e.target as Node);
       const isOutsideSidebar = !rightSidebarRef.current?.contains(e.target as Node);
-  
+
       if (selectedElement && isOutsideCanvas && isOutsideSidebar) {
         setSelectedElement(null);
       }
     };
-  
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
