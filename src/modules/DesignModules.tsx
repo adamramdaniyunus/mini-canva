@@ -176,7 +176,6 @@ export default function DesignModules() {
                 selectedElement={selectedElement}
                 setSelectedElement={setSelectedElement}
                 updateElementSize={updateElementSize}
-                rightSidebarRef={rightSidebarRef}
               />
             </div>
           </div>

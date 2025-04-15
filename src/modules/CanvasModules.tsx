@@ -17,7 +17,6 @@ const Canvas = ({
   setDrawerPosition,
   setSelectedElement,
   updateElementSize,
-  rightSidebarRef
 }: {
   components: ElementComponent[],
   handleClickElement: (element: ElementComponent) => void;
@@ -27,7 +26,6 @@ const Canvas = ({
   setDrawerPosition: React.Dispatch<React.SetStateAction<{ top: number | null; left: number | null }>>
   setSelectedElement: React.Dispatch<React.SetStateAction<ElementComponent | null>>;
   updateElementSize: (id: number, width: number, height: number) => void;
-  rightSidebarRef: React.RefObject<HTMLDivElement | null>;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
 
