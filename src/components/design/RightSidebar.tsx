@@ -1,6 +1,6 @@
 import React from 'react'
 
-const RightSidebar = ({changeColor} : {changeColor: (e:string) => void;}) => {
+const RightSidebar = ({changeColor, rightSidebarRef} : {changeColor: (e:string) => void; rightSidebarRef:  React.RefObject<HTMLDivElement | null>;}) => {
 
   // Function to handle color change
   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -8,7 +8,7 @@ const RightSidebar = ({changeColor} : {changeColor: (e:string) => void;}) => {
   };
 
   return (
-    <aside className="w-64 shadow-md p-4 space-y-4 md:block hidden h-full">
+    <aside className="w-64 shadow-md p-4 space-y-4 md:block hidden h-full" ref={rightSidebarRef}>
       <div className="flex gap-4 items-center">
         <p className="text-sm">Color :</p>
         <input type="color" onChange={handleColorChange} className="w-10 h-10" />

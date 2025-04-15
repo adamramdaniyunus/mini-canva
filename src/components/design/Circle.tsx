@@ -1,76 +1,25 @@
 import { ElementComponent } from '@/types/Element.type';
 import React from 'react'
-import { throttle } from 'lodash';
-import ResizeButton from './ResizeButton';
-
-const THROTTLE_INTERVAL = 16; // 60 FPS
 
 const Circle = ({
     component,
     handleClickElement,
-    dragOffset,
-    isDragging,
-    updateElementPosition,
     isSelected,
-    ref,
-    setDrawerPosition
+    handleMouseDown,
+    handleResize,
 }: {
     component: ElementComponent,
     handleClickElement: (element: ElementComponent) => void,
-    dragOffset: React.MutableRefObject<{ x: number; y: number; }>,
-    isDragging: React.MutableRefObject<boolean>;
-    updateElementPosition: (id: number, top: number, left: number) => void,
     isSelected: boolean,
-    ref: React.RefObject<HTMLDivElement | null>;
-    setDrawerPosition: React.Dispatch<React.SetStateAction<{ top: number | null; left: number | null }>>
+    handleMouseDown: (e: React.MouseEvent, component: ElementComponent) => void;
+    handleResize: (e: React.MouseEvent, direction: string) => void;
 }) => {
-
-    const handleMouseDown = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        handleClickElement(component);
-
-        const startX = e.clientX;
-        const startY = e.clientY;
-
-        const elementRect = e.currentTarget.getBoundingClientRect();
-        dragOffset.current = {
-            x: startX - elementRect.left,
-            y: startY - elementRect.top,
-        };
-
-        isDragging.current = true;
-
-        const handleMouseMove = throttle((moveEvent: MouseEvent) => {
-            if (!isDragging.current) return;
-
-            const newLeft = moveEvent.clientX - dragOffset.current.x;
-            const newTop = moveEvent.clientY - dragOffset.current.y;
-
-            const parentRect = ref.current?.getBoundingClientRect();
-            const relativeLeft = newLeft - (parentRect?.left || 0);
-            const relativeTop = newTop - (parentRect?.top || 0);
-
-            updateElementPosition(component.id, relativeTop, relativeLeft);
-            setDrawerPosition({ top: relativeTop, left: relativeLeft });
-        }, THROTTLE_INTERVAL);
-
-
-        const handleMouseUp = () => {
-            isDragging.current = false;
-            setDrawerPosition({ top: null, left: null }); // Clear drawer lines
-            document.removeEventListener("mousemove", handleMouseMove);
-            document.removeEventListener("mouseup", handleMouseUp);
-        };
-
-        document.addEventListener("mousemove", handleMouseMove);
-        document.addEventListener("mouseup", handleMouseUp);
-    };
-
 
     return (
         <div
-            onMouseDown={handleMouseDown}
+            onMouseDown={(e) => handleMouseDown(e, component)}
             key={component.id}
+            onClick={() => handleClickElement(component)}
             className={`absolute group hover:border-[2px] hover:border-indigo-400 ${isSelected ? 'border-[2px] border-indigo-500' : ''}`}
             style={{
                 width: component.width + "px",
@@ -87,7 +36,43 @@ const Circle = ({
                 }}
             ></div>
             {/* Resize Handles */}
-            {isSelected && <ResizeButton />}
+            {isSelected && (
+                <>
+                    {/* Corner Resizers */}
+                    {["top-left", "top-right", "bottom-left", "bottom-right"].map((dir) => (
+                        <div
+                            key={dir}
+                            onMouseDown={(e) => handleResize(e, dir)}
+                            className={`w-2 h-2 bg-white border border-black absolute cursor-${dir === "top-left" || dir === "bottom-right" ? "nwse" : "nesw"}-resize`}
+                            style={{
+                                top: dir.includes("top") ? -4 : undefined,
+                                bottom: dir.includes("bottom") ? -4 : undefined,
+                                left: dir.includes("left") ? -4 : undefined,
+                                right: dir.includes("right") ? -4 : undefined,
+                            }}
+                        />
+                    ))}
+
+                    {/* Side Resizers */}
+                    {["top", "right", "bottom", "left"].map((dir) => (
+                        <div
+                            key={dir}
+                            onMouseDown={(e) => handleResize(e, dir)}
+                            className={`absolute bg-white border border-black ${dir == "right" || dir == "left" ? "cursor-e-resize" : "cursor-ns-resize"}`}
+                            style={{
+                                width: dir === "top" || dir === "bottom" ? "10px" : "4px",
+                                height: dir === "left" || dir === "right" ? "10px" : "4px",
+                                top: dir === "top" ? -4 : dir === "bottom" ? undefined : "50%",
+                                bottom: dir === "bottom" ? -4 : undefined,
+                                left: dir === "left" ? -4 : dir === "right" ? undefined : "50%",
+                                right: dir === "right" ? -4 : undefined,
+                                transform: "translate(-50%, -50%)",
+                                cursor: `${dir}-resize`,
+                            }}
+                        />
+                    ))}
+                </>
+            )}
         </div>
     )
 }

@@ -4,13 +4,16 @@ import LeftSidebar from "@/components/design/LeftSidebar";
 import RightSidebar from "@/components/design/RightSidebar";
 import Canvas from "./CanvasModules";
 import { useDesignState } from "@/context/DesignContext";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ElementComponent } from "@/types/Element.type";
 
 const SNAP_THRESHOLD = 5; // jarak maksimal untuk snap
 export default function DesignModules() {
   const { state } = useDesignState();
   const [selectedElement, setSelectedElement] = useState<ElementComponent | null>(null);
+  const rightSidebarRef = useRef<HTMLDivElement| null>(null);
+  const canvasWrapperRef = useRef<HTMLDivElement>(null);
+  
   // drawer feature
   const [drawerPosition, setDrawerPosition] = useState<{ top: number | null, left: number | null }>({ top: null, left: null });
 
@@ -135,6 +138,22 @@ export default function DesignModules() {
     );
   };
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const isOutsideCanvas = !canvasWrapperRef.current?.contains(e.target as Node);
+      const isOutsideSidebar = !rightSidebarRef.current?.contains(e.target as Node);
+  
+      if (selectedElement && isOutsideCanvas && isOutsideSidebar) {
+        setSelectedElement(null);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [selectedElement]);
+
   return (
     <div className="h-screen flex flex-col">
       <Header />
@@ -147,7 +166,7 @@ export default function DesignModules() {
         <div className="flex-1 flex flex-col p-4">
           {/* Canvas Area */}
           <div className="flex-1 flex justify-center items-center rounded-lg p-4">
-            <div className="relative h-auto shadow-lg">
+            <div className="relative h-auto shadow-lg" ref={canvasWrapperRef}>
               <Canvas
                 setDrawerPosition={setDrawerPosition}
                 drawerPosition={drawerPosition}
@@ -163,7 +182,7 @@ export default function DesignModules() {
         </div>
 
         {/* Right Panel */}
-        {selectedElement && <RightSidebar changeColor={changeColor} />}
+        <RightSidebar changeColor={changeColor} rightSidebarRef={rightSidebarRef} />
       </div>
     </div>
   );
