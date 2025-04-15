@@ -202,14 +202,11 @@ const Canvas = ({
             if (component.name === "polygon" && component.type === "shape") {
               return <Polygon
                 component={component}
-                dragOffset={dragOffset}
                 handleClickElement={handleClickElement}
-                isDragging={isDragging}
-                updateElementPosition={updateElementPosition}
                 isSelected={isSelected}
-                ref={ref}
                 key={component.id}
-                setDrawerPosition={setDrawerPosition}
+                handleMouseDown={handleMouseDown}
+                handleResize={handleResize}
               />
             }
 
