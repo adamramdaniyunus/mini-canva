@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { ElementComponent } from "@/types/Element.type";
 import Rect from "@/components/design/Rect";
 import Circle from "@/components/design/Circle";
@@ -17,6 +17,7 @@ const Canvas = ({
   setDrawerPosition,
   setSelectedElement,
   updateElementSize,
+  updateElementRotation
 }: {
   components: ElementComponent[],
   handleClickElement: (element: ElementComponent) => void;
@@ -26,13 +27,16 @@ const Canvas = ({
   setDrawerPosition: React.Dispatch<React.SetStateAction<{ top: number | null; left: number | null }>>
   setSelectedElement: React.Dispatch<React.SetStateAction<ElementComponent | null>>;
   updateElementSize: (id: number, width: number, height: number) => void;
+  updateElementRotation: (id: number, rotation: number) => void;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const mainFrame = components.find((c) => c.name === "main_frame");
   const otherComponents = components.filter((c) => c.name !== "main_frame");
   const dragOffset = useRef({ x: 0, y: 0 });
+  const [rotate, setRotate] = useState(0);
   const isDragging = useRef(false);
+  const isRotating = useRef(false);
 
 
   // Function to handle mouse down event for dragging the element
@@ -132,6 +136,66 @@ const Canvas = ({
     document.addEventListener("mouseup", onMouseUp);
   };
 
+  // Function to handle rotation of the element
+  // This function is called when the user clicks and drags the rotate handle
+  // It calculates the new angle based on the mouse movement
+  // and updates the element's rotation accordingly
+  const handleRotate = (e: React.MouseEvent) => {
+    if (!selectedElement) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const target = document.getElementById(`element-${selectedElement.id}`);
+    if (!target) return;
+
+    const rect = target.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+
+    const startAngle = Math.atan2(startY - centerY, startX - centerX);
+    const initialRotation = parseFloat(target.dataset.rotation || "0");
+
+    const snapAngle = (angle: number, increment: number = 15) => {
+      return Math.round(angle / increment) * increment;
+    };
+
+    const mouseMove = throttle((ev: MouseEvent) => {
+      isRotating.current = true;
+      const currentAngle = Math.atan2(ev.clientY - centerY, ev.clientX - centerX);
+      const angleDiff = (currentAngle - startAngle) * (180 / Math.PI);
+      let newRotation = initialRotation + angleDiff;
+
+      // Normalisasi sudut
+      newRotation = (newRotation + 360) % 360;
+
+      target.style.transform = `rotate(${newRotation}deg)`;
+      target.dataset.rotation = newRotation.toString();
+      setRotate(newRotation);
+    }, THROTTLE_INTERVAL);
+
+    const mouseUp = () => {
+      isRotating.current = false;
+      window.removeEventListener("mousemove", mouseMove);
+      window.removeEventListener("mouseup", mouseUp);
+
+      let finalRotation = parseFloat(target.dataset.rotation || "0");
+      const snapped = snapAngle(finalRotation);
+
+      target.style.transform = `rotate(${snapped}deg)`;
+      target.dataset.rotation = snapped.toString();
+
+      updateElementRotation(selectedElement.id, snapped);
+      setRotate(snapped);
+    };
+
+    window.addEventListener("mousemove", mouseMove);
+    window.addEventListener("mouseup", mouseUp);
+  };
+
+
   // useEffect(() => {
   //   const handleClickOutside = (e: MouseEvent) => {
   //     if (
@@ -185,6 +249,9 @@ const Canvas = ({
                 key={component.id}
                 handleMouseDown={handleMouseDown}
                 handleResize={handleResize}
+                handleRotate={handleRotate}
+                isRotating={isRotating}
+                rotate={rotate}
               />
             }
 
@@ -196,6 +263,9 @@ const Canvas = ({
                 key={component.id}
                 handleMouseDown={handleMouseDown}
                 handleResize={handleResize}
+                handleRotate={handleRotate}
+                isRotating={isRotating}
+                rotate={rotate}
               />
             }
 
@@ -207,6 +277,9 @@ const Canvas = ({
                 key={component.id}
                 handleMouseDown={handleMouseDown}
                 handleResize={handleResize}
+                handleRotate={handleRotate}
+                isRotating={isRotating}
+                rotate={rotate}
               />
             }
 
@@ -214,12 +287,24 @@ const Canvas = ({
           })}
           {
             drawerPosition.top !== null && (
-              <div className="absolute border-t border-dashed left-0 w-full h-[1px] bg-indigo-500 pointer-events-none" style={{ top: drawerPosition.top }} />
+              <div
+                className="absolute left-0 w-full h-[1px] pointer-events-none"
+                style={{
+                  top: drawerPosition.top,
+                  backgroundImage: 'repeating-linear-gradient(to right, #6366f1 0 4px, transparent 4px 10px)',
+                }}
+              />
             )
           }
           {
             drawerPosition.left !== null && (
-              <div className="absolute border-l border-dashed top-0 h-full w-[1px] bg-indigo-500 pointer-events-none" style={{ left: drawerPosition.left }} />
+              <div
+                className="absolute top-0 h-full w-[1px] pointer-events-none"
+                style={{
+                  left: drawerPosition.left,
+                  backgroundImage: 'repeating-linear-gradient(to bottom, #6366f1 0 4px, transparent 4px 10px)',
+                }}
+              />
             )
           }
         </div>

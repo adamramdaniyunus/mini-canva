@@ -9,4 +9,5 @@ export type ElementComponent = {
   image: string;
   top?: number;
   left?: number;
+  rotation?: number;
 }

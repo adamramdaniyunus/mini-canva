@@ -1,8 +1,24 @@
 import React from 'react'
+import { FaRotate } from 'react-icons/fa6';
 
-const ResizeButton = ({handleResize} : { handleResize: (e: React.MouseEvent, direction: string) => void;}) => {
+const ResizeButton = ({ handleResize, handleRotate }:
+    {
+        handleResize: (e: React.MouseEvent, direction: string) => void;
+        handleRotate: (e: React.MouseEvent) => void;
+    }) => {
     return (
         <>
+            <div
+                onMouseDown={(e) => handleRotate(e)}
+                className="absolute bg-white border border-black rounded-full cursor-pointer"
+                style={{
+                    top: -40, // di atas shape
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                }}
+            >
+                <FaRotate/>
+            </div>
             {/* Corner Resizers */}
             {["top-left", "top-right", "bottom-left", "bottom-right"].map((dir) => (
                 <div
