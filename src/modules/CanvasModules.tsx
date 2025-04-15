@@ -12,7 +12,8 @@ const Canvas = ({
   updateElementPosition,
   drawerPosition,
   setDrawerPosition,
-  setSelectedElement
+  setSelectedElement,
+  updateElementSize
 }: {
   components: ElementComponent[],
   handleClickElement: (element: ElementComponent) => void;
@@ -21,6 +22,7 @@ const Canvas = ({
   drawerPosition: { top: number | null; left: number | null };
   setDrawerPosition: React.Dispatch<React.SetStateAction<{ top: number | null; left: number | null }>>
   setSelectedElement: React.Dispatch<React.SetStateAction<ElementComponent | null>>;
+  updateElementSize: (id: number, width: number, height: number) => void;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -82,6 +84,7 @@ const Canvas = ({
                 ref={ref}
                 key={component.id}
                 setDrawerPosition={setDrawerPosition}
+                updateElementSize={updateElementSize}
               />
             }
 

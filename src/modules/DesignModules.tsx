@@ -129,6 +129,11 @@ export default function DesignModules() {
     );
   };
 
+  const updateElementSize = (id: number, width: number, height: number) => {
+    setComponents((prev) =>
+      prev.map((el) => el.id === id ? { ...el, width, height } : el)
+    );
+  };
 
   return (
     <div className="h-screen flex flex-col">
@@ -151,6 +156,7 @@ export default function DesignModules() {
                 handleClickElement={handleClickElement}
                 selectedElement={selectedElement}
                 setSelectedElement={setSelectedElement}
+                updateElementSize={updateElementSize}
               />
             </div>
           </div>
