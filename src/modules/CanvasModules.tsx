@@ -181,7 +181,7 @@ const Canvas = ({
       window.removeEventListener("mousemove", mouseMove);
       window.removeEventListener("mouseup", mouseUp);
 
-      let finalRotation = parseFloat(target.dataset.rotation || "0");
+      const finalRotation = parseFloat(target.dataset.rotation || "0");
       const snapped = snapAngle(finalRotation);
 
       target.style.transform = `rotate(${snapped}deg)`;

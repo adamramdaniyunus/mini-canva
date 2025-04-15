@@ -1,5 +1,5 @@
 import { ElementComponent } from '@/types/Element.type';
-import React, { Ref, RefObject } from 'react'
+import React, { RefObject } from 'react'
 import ResizeButton from './ResizeButton';
 
 const Rect = ({
