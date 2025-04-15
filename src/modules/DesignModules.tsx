@@ -143,6 +143,12 @@ export default function DesignModules() {
     );
   };
 
+  const updateElementRotation = (id: number, rotation: number) => {
+    setComponents((prev) => 
+      prev.map((el) => el.id === id ? { ...el, rotation } : el)
+    );
+  };
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const isOutsideCanvas = !canvasWrapperRef.current?.contains(e.target as Node);
@@ -181,6 +187,7 @@ export default function DesignModules() {
                 selectedElement={selectedElement}
                 setSelectedElement={setSelectedElement}
                 updateElementSize={updateElementSize}
+                updateElementRotation={updateElementRotation}
               />
             </div>
           </div>
