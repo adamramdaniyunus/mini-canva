@@ -4,6 +4,7 @@ import Button from "@/components/Button";
 import { IoColorPaletteOutline } from "react-icons/io5";
 import { CgClose, CgColorBucket } from "react-icons/cg";
 import { useState } from "react";
+import GradientPicker from "./GradientPicker";
 
 const defaultColors = ["#000000", "#2B2710", "#B34721", "#DDD0C0", "#EDE6DE"];
 const colorData = [
@@ -145,14 +146,37 @@ const ColorPicker = ({
     const [colors, setColors] = useState(defaultColors);
     const [showPicker, setShowPicker] = useState(false);
     const [newColor, setNewColor] = useState("#000000");
+    const [gradientStart, setGradientStart] = useState("#ff0000");
+    const [gradientEnd, setGradientEnd] = useState("#0000ff");
+    const [gradientAngle, setGradientAngle] = useState(90);
+    const [colorPalettes, setColorPalettes] = useState("basic");
+
+    const handleAddGradient = () => {
+        const gradient = `linear-gradient(${gradientAngle}deg, ${gradientStart}, ${gradientEnd})`;
+        setColors([...colors, gradient]);
+        setShowPicker(false);
+    };
+
 
     const handleAddColor = () => {
         setColors([...colors, newColor]);
         setShowPicker(false);
     };
 
+
+    const colorPalettesRender = ({ color, index }: { color: string; index: number }) => {
+        return (
+            <div
+                onClick={() => handleChangeColor(color)}
+                key={index}
+                className={`w-10 h-10 rounded-full cursor-pointer ${color == pickColor ? 'border-2 border-indigo-500' : ''}`}
+                style={{ background: color }}
+            />
+        )
+    }
+
     return (
-        <div className="p-2 z-[999999] left-20 fixed w-64 rounded shadow top-[68px] bg-white h-full overflow-auto">
+        <div className="p-2 z-[999999] left-20 fixed h-full w-64 rounded shadow top-[68px] bg-white overflow-auto">
             <div className="flex justify-between w-full pb-2">
                 <p className="text-sm font-semibold">Color</p>
                 <button className="cursor-pointer" onClick={handleShowColorPicker}>
@@ -173,38 +197,48 @@ const ColorPicker = ({
 
                     {/* Color Picker Popup */}
                     {showPicker && (
-                        <div className="absolute top-10 left-0 z-10 p-2 bg-white shadow rounded">
-                            <HexColorPicker color={newColor} onChange={setNewColor} />
-                            <div className="mt-2">
-                                <Button onClick={handleAddColor}>
-                                    Add
-                                </Button>
+                        <div className="absolute top-8 left-0 z-10 p-2 bg-white shadow rounded">
+                            <div className="flex gap-4">
+                                <button onClick={() => setColorPalettes("basic")} className={`text-xs font-semibold px-2 cursor-pointer py-3 ${colorPalettes == 'basic' && 'border-indigo-500 border-b-2'}`}>Basic Color</button>
+                                <button onClick={() => setColorPalettes("gradient")} className={`text-xs font-semibold px-2 cursor-pointer py-3 ${colorPalettes == 'gradient' && 'border-indigo-500 border-b-2'}`}>Gradient</button>
                             </div>
+                            {colorPalettes === "basic" ? (
+                                <div className="mt-3">
+                                    <HexColorPicker style={{height: 150}} color={newColor} onChange={setNewColor} />
+                                    <div className="mt-2">
+                                        <Button onClick={handleAddColor}>
+                                            Add
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div>
+                                 <GradientPicker 
+                                    gradientStart={gradientStart}
+                                    gradientEnd={gradientEnd}
+                                    setGradientStart={setGradientStart}
+                                    setGradientEnd={setGradientEnd}
+                                    gradientAngle={gradientAngle}
+                                    setGradientAngle={setGradientAngle}
+                                    handleAddGradient={handleAddGradient}
+                                 />
+                                </div>
+                            )}
+
                         </div>
                     )}
                 </div>
 
                 {/* Daftar warna */}
                 {colors.map((color, index) => (
-                    <div
-                        onClick={() => handleChangeColor(color)}
-                        key={index}
-                        className={`w-10 h-10 rounded-full cursor-pointer ${color == pickColor ? 'border-2 border-indigo-500' : ''}`}
-                        style={{ backgroundColor: color }}
-                    />
+                    colorPalettesRender({ color, index })
                 ))}
 
                 <div className="flex-col flex gap-4 mt-5">
                     <h2 className="font-semibold text-sm flex items-center gap-2"><span><IoColorPaletteOutline /></span> Basic Color</h2>
                     <div className="flex flex-wrap gap-2">
                         {colorData.map((color, index) => (
-                            <div
-                                onClick={() => handleChangeColor(color.hex)}
-                                key={index}
-                                className={`w-10 h-10 rounded-full cursor-pointer ${color.hex == pickColor ? 'border-2 border-indigo-500' : ''}`}
-                                title={color.name}
-                                style={{ backgroundColor: color.hex }}
-                            />
+                            colorPalettesRender({ color: color.hex, index })
                         ))}
                     </div>
                 </div>
@@ -213,13 +247,7 @@ const ColorPicker = ({
                     <h2 className="font-semibold text-sm flex items-center gap-2"><span><IoColorPaletteOutline /></span> Gradient Color</h2>
                     <div className="flex flex-wrap gap-2">
                         {gradientColors.map((color, index) => (
-                            <div
-                                onClick={() => handleChangeColor(color.gradient)}
-                                key={index}
-                                className={`w-10 h-10 rounded-full cursor-pointer ${color.gradient == pickColor ? 'border-2 border-indigo-500' : ''}`}
-                                title={color.label}
-                                style={{ background: color.gradient }}
-                            />
+                            colorPalettesRender({ color: color.gradient, index })
                         ))}
                     </div>
                 </div>
