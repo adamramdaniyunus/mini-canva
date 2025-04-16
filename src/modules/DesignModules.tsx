@@ -108,6 +108,8 @@ export default function DesignModules() {
   //   [selectedElement]
   // );
 
+  // element attribute update
+  
   const updateElementPosition = (id: number, newTop: number, newLeft: number) => {
     const movingElement = components.find(c => c.id === id);
     if (!movingElement) return;
@@ -183,6 +185,12 @@ export default function DesignModules() {
     );
   };
 
+  const updateElementZIndex = (id: number, z_index: number) => {
+    setComponents((prev) =>
+      prev.map((el) => el.id === id ? { ...el, z_index } : el)
+    );
+  };
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (!canvasWrapperRef.current) return;
@@ -204,6 +212,11 @@ export default function DesignModules() {
   const handleDeleteElement = (id: number) => {
     setComponents((prev) => prev.filter((el) => el.id !== id));
     setSelectedElement(null);
+  }
+
+  // handle updated z-index
+  const handleZIndexChange = (id: number, z_index: number) => {
+    updateElementZIndex(id,z_index);
   }
 
   return (
@@ -243,6 +256,7 @@ export default function DesignModules() {
                   handleShowColorPicker={handleShowColorPicker}
                   selectedElement={selectedElement}
                   handleDeleteElement={handleDeleteElement}
+                  handleZIndexChange={handleZIndexChange}
                 />
               )}
             </div>
