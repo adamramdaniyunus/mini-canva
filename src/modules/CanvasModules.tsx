@@ -17,7 +17,7 @@ const Canvas = ({
   setDrawerPosition,
   setSelectedElement,
   updateElementSize,
-  updateElementRotation
+  updateElementRotation,
 }: {
   components: ElementComponent[],
   handleClickElement: (element: ElementComponent) => void;
@@ -141,9 +141,9 @@ const Canvas = ({
   // It calculates the new angle based on the mouse movement
   // and updates the element's rotation accordingly
   const handleRotate = (e: React.MouseEvent) => {
-    if (!selectedElement) return;
     e.preventDefault();
     e.stopPropagation();
+    if (!selectedElement) return;
 
     const target = document.getElementById(`element-${selectedElement.id}`);
     if (!target) return;
@@ -219,7 +219,8 @@ const Canvas = ({
     <div className="flex justify-center items-center relative">
       <div ref={ref} className="relative w-auto h-auto overflow-auto">
         <div
-          className="relative hover:border-[2px] hover:border-indigo-400 shadow-md"
+          className={`relative hover:border-[3px] hover:border-indigo-400 shadow-md ${selectedElement?.id === mainFrame.id ? 'border-[3px] border-indigo-500' : ''}`}
+
           onMouseDown={() => setSelectedElement(mainFrame)}
           style={{
             width: mainFrame.width,

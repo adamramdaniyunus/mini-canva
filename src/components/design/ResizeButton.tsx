@@ -8,11 +8,12 @@ const ResizeButton = ({ handleResize, handleRotate }:
     }) => {
     return (
         <>
+            {/* Rotate Button */}
             <div
                 onMouseDown={(e) => handleRotate(e)}
-                className="absolute bg-white border border-black rounded-full cursor-pointer"
+                className="absolute bg-white border border-black rounded-full cursor-crosshair"
                 style={{
-                    top: -40, // di atas shape
+                    bottom: -40, // di bawah shape
                     left: '50%',
                     transform: 'translateX(-50%)',
                 }}
