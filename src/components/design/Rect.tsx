@@ -42,7 +42,12 @@ const Rect = ({
                 transformOrigin: 'center',
             }}
         >
-            {isRotating.current && isSelected && <p className='absolute -top-7 text-indigo-500 text-sm'>{Math.floor(rotate)}</p>}
+            {isRotating.current && isSelected && <p className='absolute -top-7 text-indigo-500 text-sm'
+                style={{
+                    transform: `rotate(-${component.rotation || 0}deg)`, // agar tidak ikut muter
+                }}>{
+                    Math.floor(rotate)}
+            </p>}
             {/* Resize Handles */}
             {isSelected && <ResizeButton handleResize={handleResize} handleRotate={handleRotate} />}
         </div>

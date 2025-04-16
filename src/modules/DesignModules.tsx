@@ -1,19 +1,53 @@
 "use client";
 import Header from "@/components/design/Header";
 import LeftSidebar from "@/components/design/LeftSidebar";
-import RightSidebar from "@/components/design/RightSidebar";
+import FeaturePanel from "@/components/design/FeaturePanel";
 import Canvas from "./CanvasModules";
 import { useDesignState } from "@/context/DesignContext";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ElementComponent } from "@/types/Element.type";
-import { throttle } from "lodash";
+import ColorPicker from "@/components/design/ColorPicker";
 
 const SNAP_THRESHOLD = 5; // jarak maksimal untuk snap
 export default function DesignModules() {
   const { state } = useDesignState();
   const [selectedElement, setSelectedElement] = useState<ElementComponent | null>(null);
-  const rightSidebarRef = useRef<HTMLDivElement | null>(null);
   const canvasWrapperRef = useRef<HTMLDivElement>(null);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [color, setColor] = useState("#000000");
+
+  // show color picker
+  const handleShowColorPicker = () => {
+    setShowColorPicker((prev) => !prev);
+  };
+
+  // handle color change
+  const handleChangeColor = (color: string) => {
+    setColor(color);
+    setComponents((prevComponents) =>
+      prevComponents.map((component) => {
+        if (selectedElement && component.id === selectedElement.id) {
+          return { ...component, color: color };
+        }
+        return component;
+      })
+    );
+  }
+
+
+  // hide color picker when click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (canvasWrapperRef.current && !canvasWrapperRef.current.contains(e.target as Node)) {
+        setShowColorPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // drawer feature
   const [drawerPosition, setDrawerPosition] = useState<{ top: number | null, left: number | null }>({ top: null, left: null });
@@ -59,20 +93,20 @@ export default function DesignModules() {
     setComponents((prev) => [...prev, newComponent]);
   }
 
-  const changeColor = useMemo(
-    () =>
-      throttle((color: string) => {
-        setComponents((prevComponents) =>
-          prevComponents.map((component) => {
-            if (selectedElement && component.id === selectedElement.id) {
-              return { ...component, color: color };
-            }
-            return component;
-          })
-        );
-      }, 500),
-    [selectedElement]
-  );
+  // const changeColor = useMemo(
+  //   () =>
+  //     throttle((color: string) => {
+  //       setComponents((prevComponents) =>
+  //         prevComponents.map((component) => {
+  //           if (selectedElement && component.id === selectedElement.id) {
+  //             return { ...component, color: color };
+  //           }
+  //           return component;
+  //         })
+  //       );
+  //     }, 500),
+  //   [selectedElement]
+  // );
 
   const updateElementPosition = (id: number, newTop: number, newLeft: number) => {
     const movingElement = components.find(c => c.id === id);
@@ -144,17 +178,17 @@ export default function DesignModules() {
   };
 
   const updateElementRotation = (id: number, rotation: number) => {
-    setComponents((prev) => 
+    setComponents((prev) =>
       prev.map((el) => el.id === id ? { ...el, rotation } : el)
     );
   };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
+      if (!canvasWrapperRef.current) return;
       const isOutsideCanvas = !canvasWrapperRef.current?.contains(e.target as Node);
-      const isOutsideSidebar = !rightSidebarRef.current?.contains(e.target as Node);
 
-      if (selectedElement && isOutsideCanvas && isOutsideSidebar) {
+      if (selectedElement && isOutsideCanvas) {
         setSelectedElement(null);
       }
     };
@@ -164,6 +198,13 @@ export default function DesignModules() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [selectedElement]);
+
+
+  // handle delete element
+  const handleDeleteElement = (id: number) => {
+    setComponents((prev) => prev.filter((el) => el.id !== id));
+    setSelectedElement(null);
+  }
 
   return (
     <div className="h-screen flex flex-col">
@@ -178,6 +219,13 @@ export default function DesignModules() {
           {/* Canvas Area */}
           <div className="flex-1 flex justify-center items-center rounded-lg p-4">
             <div className="relative h-auto shadow-lg" ref={canvasWrapperRef}>
+              {showColorPicker && (
+                <ColorPicker
+                  handleShowColorPicker={handleShowColorPicker}
+                  handleChangeColor={handleChangeColor}
+                  color={color}
+                />
+              )}
               <Canvas
                 setDrawerPosition={setDrawerPosition}
                 drawerPosition={drawerPosition}
@@ -189,12 +237,17 @@ export default function DesignModules() {
                 updateElementSize={updateElementSize}
                 updateElementRotation={updateElementRotation}
               />
+              {selectedElement && (
+                <FeaturePanel
+                  color={color}
+                  handleShowColorPicker={handleShowColorPicker}
+                  selectedElement={selectedElement}
+                  handleDeleteElement={handleDeleteElement}
+                />
+              )}
             </div>
           </div>
         </div>
-
-        {/* Right Panel */}
-        <RightSidebar changeColor={changeColor} rightSidebarRef={rightSidebarRef} />
       </div>
     </div>
   );
