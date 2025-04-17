@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Button from "../Button";
 import LayoutMenu from "./LayoutMenu";
+import { uploadToSupabase } from "@/lib/supabase";
 
 type ImageItem = {
   url: string;
@@ -105,10 +106,25 @@ const DownloadComponent = () => {
     setLayout(groupImages(updatedLayout));
   }, []);
 
+
   return (
     <LayoutMenu>
       <div className="p-4 flex gap-2">
-        <Button>Upload Images</Button>
+        <Button onClick={() => {
+          const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+          if (fileInput) {
+            fileInput.click();
+          }
+        }}>Upload Images</Button>
+        <input
+          type="file"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              uploadToSupabase(e.target.files[0]);
+            }
+          }}
+        />
       </div>
 
       <div className="overflow-auto h-full space-y-4 p-4">
