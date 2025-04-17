@@ -1,3 +1,4 @@
+import { CanvasType } from '@/types/CanvasType';
 import { ElementComponent } from '@/types/Element.type';
 import React from 'react';
 import { BiTrash } from 'react-icons/bi';
@@ -7,11 +8,13 @@ const FeaturePanel = ({
   handleShowColorPicker,
   color,
   selectedElement,
+  selectedCanvas,
   handleDeleteElement,
   handleZIndexChange,
 }: {
   handleShowColorPicker: () => void;
   selectedElement: ElementComponent | null;
+  selectedCanvas: CanvasType | null;
   color: string;
   handleDeleteElement: (id: number) => void;
   handleZIndexChange: (id: number, zIndex: number) => void;
@@ -28,7 +31,7 @@ const FeaturePanel = ({
         ></button>
 
         {/* Hanya muncul jika bukan main_frame */}
-        {selectedElement?.name !== 'main_frame' && (
+        {!selectedCanvas && (
           <>
             {/* Delete Button */}
             <button
@@ -58,7 +61,7 @@ const FeaturePanel = ({
                 onClick={() =>
                   handleZIndexChange(
                     selectedElement!.id,
-                    Math.max(1, (selectedElement!.z_index || 1) - 1)
+                    Math.max(0, (selectedElement!.z_index || 0) - 1)
                   )
                 }
                 className="p-1 bg-gray-100 hover:bg-gray-300 rounded"

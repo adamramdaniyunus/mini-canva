@@ -10,4 +10,5 @@ export type ElementComponent = {
   top?: number;
   left?: number;
   rotation?: number;
+  text?: string;
 }

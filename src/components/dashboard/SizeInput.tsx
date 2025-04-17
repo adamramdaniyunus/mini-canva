@@ -3,6 +3,8 @@ import Button from "../Button";
 import InputnLabelNumber from "../InputnLabelNumber";
 import { useDesignState } from "@/context/DesignContext";
 import { useRouter } from "next/navigation";
+import { ElementComponent } from "@/types/Element.type";
+import { saveDesign } from "@/lib/indexDB";
 
 const SizeInput = ({
   dimensions,
@@ -14,15 +16,32 @@ const SizeInput = ({
   const { setState, setLoading, isLoading } = useDesignState();
   const router = useRouter();
 
-  const CreatNewDesign = () => {
+  const CreatNewDesign = async() => {
     setLoading(true);
     setState({
       width: Number(dimensions.width),
       height: Number(dimensions.height),
     });
-    
-    router.push("/design/1/edit");
+
+    const newDesignId = Math.floor(Math.random() * 100 + 1).toString();
+    const initialComponents: ElementComponent[] = [
+      {
+        name: "main_frame",
+        type: "main_frame",
+        id: Math.floor(Math.random() * 100 + 1),
+        height: Number(dimensions.height) ?? 400,
+        width: Number(dimensions.width) ?? 500,
+        z_index: 1,
+        color: "#DBDBDB",
+        image: "",
+        top: 0,
+        left: 0,
+      },
+    ];
+
+    await saveDesign(newDesignId, initialComponents);
     setLoading(false);
+    router.push(`/design/${newDesignId}/edit`);
   };
 
   return (

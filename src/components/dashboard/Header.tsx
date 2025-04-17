@@ -5,6 +5,8 @@ import { useDesignState } from "@/context/DesignContext";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { signOut } from "next-auth/react";
+import { createDesign } from "@/lib/indexDB";
+import { CanvasType } from "@/types/CanvasType";
 
 export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
@@ -13,16 +15,49 @@ export default function Header() {
   const router = useRouter();
   const { setState, setLoading, isLoading } = useDesignState();
 
-  const handleCreateNewDesign = () => {
+  const handleCreateNewDesign = async () => {
     setLoading(true);
     setState({ width: 400, height: 400 });
-    router.push("/design/1/edit");
+    let promise: {data: {project_id: string, frame_id:string}} = {data:{project_id: "", frame_id: ""}};
+
+    // Call API to create new design
+    try {
+      const response = await fetch("/api/design", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ width: 400, height: 500 }),
+      });
+      promise = await response.json();
+      console.log(promise, "data create new design");
+      
+    } catch (error) {
+      console.error("Error creating new design:", error);
+      setLoading(false);
+      return;
+    }
+
+    const newDesignId = promise.data.project_id; // Use the project_id from the response
+    const initialComponents: CanvasType ={
+      id: promise.data.frame_id,
+      height: 400,
+      width: 500,
+      background_color: "#DBDBDB",
+      background_image: "",
+      components: [],
+      project_id: newDesignId,
+    };
+
+    await createDesign(newDesignId, initialComponents);
     setLoading(false);
+    router.push(`/design/${newDesignId}/edit`);
   };
 
-  const handleShowMenu = () => {
-    setShowMenu((prev) => !prev);
-  };
+  const handleShowMenu
+    = () => {
+      setShowMenu((prev) => !prev);
+    };
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/" });
@@ -67,9 +102,8 @@ export default function Header() {
           {/* Menu Section */}
           <div
             ref={menuRef} // ⬅️ Tambahkan ref ke div menu
-            className={`absolute p-2 text-white bg-black/70 ${
-              showMenu ? "opacity-100" : "opacity-0 pointer-events-none"
-            } duration-300 transition-all right-0 -bottom-[40px]`}
+            className={`absolute p-2 text-white bg-black/70 ${showMenu ? "opacity-100" : "opacity-0 pointer-events-none"
+              } duration-300 transition-all right-0 -bottom-[40px]`}
           >
             <div className="flex flex-col items-center">
               <button onClick={handleLogout} className="cursor-pointer active:opacity-80 text-sm transition-all duration-300">

@@ -18,22 +18,33 @@ const ResizeButton = ({ handleResize, handleRotate }:
                     transform: 'translateX(-50%)',
                 }}
             >
-                <FaRotate/>
+                <FaRotate />
             </div>
             {/* Corner Resizers */}
-            {["top-left", "top-right", "bottom-left", "bottom-right"].map((dir) => (
-                <div
-                    key={dir}
-                    onMouseDown={(e) => handleResize(e, dir)}
-                    className={`w-2 h-2 bg-white border border-black absolute cursor-${dir === "top-left" || dir === "bottom-right" ? "nwse" : "nesw"}-resize`}
-                    style={{
-                        top: dir.includes("top") ? -4 : undefined,
-                        bottom: dir.includes("bottom") ? -4 : undefined,
-                        left: dir.includes("left") ? -4 : undefined,
-                        right: dir.includes("right") ? -4 : undefined,
-                    }}
-                />
-            ))}
+            {["top-left", "top-right", "bottom-left", "bottom-right"].map((dir) => {
+                const cursor =
+                    dir === "top-left" || dir === "bottom-right" ? "nwse-resize" : "nesw-resize";
+
+                const positionStyle: React.CSSProperties = {
+                    position: "absolute",
+                    width: 8,
+                    height: 8,
+                    backgroundColor: "white",
+                    border: "1px solid black",
+                    cursor,
+                    ...(dir.includes("top") ? { top: -4 } : { bottom: -4 }),
+                    ...(dir.includes("left") ? { left: -4 } : { right: -4 }),
+                };
+
+                return (
+                    <div
+                        key={dir}
+                        onMouseDown={(e) => handleResize(e, dir)}
+                        style={positionStyle}
+                    />
+                );
+            })}
+
 
             {/* Side Resizers */}
             {["top", "right", "bottom", "left"].map((dir) => (

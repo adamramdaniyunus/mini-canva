@@ -5,6 +5,9 @@ import Rect from "@/components/design/Rect";
 import Circle from "@/components/design/Circle";
 import Polygon from "@/components/design/Polygon";
 import { throttle } from "lodash";
+import ImageElement from "@/components/design/ImageElement";
+import { saveImageBlob } from "@/lib/indexDB";
+import { CanvasType } from "@/types/CanvasType";
 
 const THROTTLE_INTERVAL = 16; // 60 FPS
 
@@ -15,29 +18,41 @@ const Canvas = ({
   updateElementPosition,
   drawerPosition,
   setDrawerPosition,
-  setSelectedElement,
   updateElementSize,
   updateElementRotation,
+  addImage,
+  newImageId,
+  mainFrame
 }: {
   components: ElementComponent[],
-  handleClickElement: (element: ElementComponent) => void;
+  handleClickElement: (element: ElementComponent | CanvasType | null) => void;
   selectedElement: ElementComponent | null;
   updateElementPosition: (id: number, top: number, left: number) => void;
   drawerPosition: { top: number | null; left: number | null };
   setDrawerPosition: React.Dispatch<React.SetStateAction<{ top: number | null; left: number | null }>>
-  setSelectedElement: React.Dispatch<React.SetStateAction<ElementComponent | null>>;
+  setSelectedCanvas: React.Dispatch<React.SetStateAction<CanvasType | null>>;
   updateElementSize: (id: number, width: number, height: number) => void;
   updateElementRotation: (id: number, rotation: number) => void;
+  addImage: ({ clientX, clientY, newWidth, newHeight, blobUrl }: {
+    clientX: number;
+    clientY: number;
+    newWidth: number;
+    newHeight: number;
+    blobUrl: string;
+  }) => void;
+  newImageId: string;
+  mainFrame: CanvasType | null;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
-  const mainFrame = components.find((c) => c.name === "main_frame");
+  // const mainFrame = components.find((c) => c.name === "main_frame");
   const otherComponents = components.filter((c) => c.name !== "main_frame");
   const dragOffset = useRef({ x: 0, y: 0 });
   const [rotate, setRotate] = useState(0);
   const isDragging = useRef(false);
   const isRotating = useRef(false);
-
+  const isLoading = !mainFrame;
 
   // Function to handle mouse down event for dragging the element
   // This function is called when the user clicks on the element
@@ -196,44 +211,103 @@ const Canvas = ({
   };
 
 
-  // useEffect(() => {
-  //   const handleClickOutside = (e: MouseEvent) => {
-  //     if (
-  //       selectedElement &&
-  //       !ref.current?.contains(e.target as Node) &&
-  //       !rightSidebarRef.current?.contains(e.target as Node)
-  //     ) {
-  //       setSelectedElement(null);
-  //     }
-  //   };
 
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => {
-  //     document.removeEventListener("mousedown", handleClickOutside);
-  //   };
-  // }, []);
+  // handle drag and drop image
+  // This function is called when the user drops an image onto the canvas
 
-  if (!mainFrame) return <div>No main frame found.</div>;
+  const loadImage = (src: string, dropX: number, dropY: number) => {
+    const img = new Image();
+    img.src = src;
+
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+
+      const maxWidth = 300;
+      const maxHeight = 300;
+
+      let newWidth = width;
+      let newHeight = height;
+
+      if (width > maxWidth || height > maxHeight) {
+        const ratio = Math.min(maxWidth / width, maxHeight / height);
+        newWidth = width * ratio;
+        newHeight = height * ratio;
+      }
+
+      addImage({
+        blobUrl: src,
+        clientX: dropX,
+        clientY: dropY,
+        newWidth,
+        newHeight,
+      });
+    };
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+
+    const canvasRect = canvasRef.current?.getBoundingClientRect();
+    const dropX = e.clientX - (canvasRect?.left ?? 0);
+    const dropY = e.clientY - (canvasRect?.top ?? 0);
+
+    const file = e.dataTransfer.files[0];
+
+    if (file && file.type.startsWith('image/')) {
+      // Local file — langsung upload
+      const blobUrl = URL.createObjectURL(file);
+      loadImage(blobUrl, dropX, dropY);
+      await saveImageBlob(Number(newImageId), file);
+      // const result = await uploadToSupabase(file, `local-${Date.now()}-${file.name}`);
+      // if (result) {
+      //   console.log('Uploaded from local file:', result);
+      // }
+    } else {
+      const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
+      if (url && url.startsWith('http')) {
+        try {
+          const response = await fetch(url, { mode: 'cors' }); // HARUS server-nya support CORS
+          const blob = await response.blob();
+          await saveImageBlob(Number(newImageId), blob)
+          const blobUrl = URL.createObjectURL(blob);
+          loadImage(blobUrl, dropX, dropY);
+
+          // const fileExt = blob.type.split('/')[1] || 'jpg';
+          // const result = await uploadToSupabase(blob, `url-${Date.now()}.${fileExt}`);
+          // if (result) {
+          //   console.log('Uploaded from URL:', result);
+          // }
+        } catch (error) {
+          console.warn('Gagal ambil gambar dari URL. Kemungkinan karena CORS:', url);
+          console.log(error, "Error");
+          alert('Gagal mengakses gambar dari URL. Server asal mungkin tidak mengizinkan CORS.');
+        }
+      }
+    }
+  };
 
   return (
     <div className="flex justify-center items-center relative">
       <div ref={ref} className="relative w-auto h-auto overflow-auto">
         <div
-          className={`relative hover:border-[3px] hover:border-indigo-400 shadow-md ${selectedElement?.id === mainFrame.id ? 'border-[3px] border-indigo-500' : ''}`}
-
-          onMouseDown={() => setSelectedElement(mainFrame)}
+          ref={canvasRef}
+          onMouseDown={() => handleClickElement(mainFrame)}
+          className={`${isLoading && 'blur-[5px] pointer-events-none transition-all duration-300 ease-in'} relative hover:border-[3px] hover:border-indigo-400 shadow-md ${selectedElement?.id === mainFrame?.id ? 'border-[3px] border-indigo-500' : ''}`}
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
           style={{
-            width: mainFrame.width,
-            height: mainFrame.height,
-            background: mainFrame.color,
-            zIndex: mainFrame.z_index,
+            width: mainFrame ? mainFrame.width : 500,
+            height: mainFrame ? mainFrame.height : 400,
+            background: mainFrame ? mainFrame.background_color : "#DBDBDB",
+            zIndex: 1,
           }}
         >
           {/* If there's a background image */}
-          {mainFrame.image && (
+          {mainFrame && mainFrame.background_image && (
             <img
               className="w-full h-full object-cover"
-              src={mainFrame.image}
+              src={mainFrame.background_image}
               alt="canvas"
             />
           )}
@@ -282,6 +356,22 @@ const Canvas = ({
                 isRotating={isRotating}
                 rotate={rotate}
               />
+            }
+
+            if (component.name === "image" && component.type === "image") {
+              return (
+                <ImageElement
+                  component={component}
+                  handleClickElement={handleClickElement}
+                  isSelected={isSelected}
+                  key={component.id}
+                  handleMouseDown={handleMouseDown}
+                  handleResize={handleResize}
+                  handleRotate={handleRotate}
+                  isRotating={isRotating}
+                  rotate={rotate}
+                />
+              )
             }
 
             return null;
