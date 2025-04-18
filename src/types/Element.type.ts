@@ -11,4 +11,6 @@ export type ElementComponent = {
   left?: number;
   rotation?: number;
   text?: string;
+  font_size?: number;
+  font_family?: string;
 }

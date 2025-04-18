@@ -8,6 +8,7 @@ import { throttle } from "lodash";
 import ImageElement from "@/components/design/ImageElement";
 import { saveImageBlob } from "@/lib/indexDB";
 import { CanvasType } from "@/types/CanvasType";
+import Text from "@/components/design/Text";
 
 const THROTTLE_INTERVAL = 16; // 60 FPS
 
@@ -30,7 +31,6 @@ const Canvas = ({
   updateElementPosition: (id: number, top: number, left: number) => void;
   drawerPosition: { top: number | null; left: number | null };
   setDrawerPosition: React.Dispatch<React.SetStateAction<{ top: number | null; left: number | null }>>
-  setSelectedCanvas: React.Dispatch<React.SetStateAction<CanvasType | null>>;
   updateElementSize: (id: number, width: number, height: number) => void;
   updateElementRotation: (id: number, rotation: number) => void;
   addImage: ({ clientX, clientY, newWidth, newHeight, blobUrl }: {
@@ -372,6 +372,20 @@ const Canvas = ({
                   rotate={rotate}
                 />
               )
+            }
+
+            if (component.type === "text") {
+              return <Text
+                component={component}
+                handleClickElement={handleClickElement}
+                isSelected={isSelected}
+                key={component.id}
+                handleMouseDown={handleMouseDown}
+                handleResize={handleResize}
+                handleRotate={handleRotate}
+                isRotating={isRotating}
+                rotate={rotate}
+              />
             }
 
             return null;
