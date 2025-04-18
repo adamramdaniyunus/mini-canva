@@ -128,6 +128,55 @@ export default function DesignModules() {
     setComponents((prev) => [...prev, newImage]);
   }
 
+  const measureTextDOM = (text: string, fontFamily: string, fontSize: number): { width: number, height: number } => {
+    const div = document.createElement("div");
+
+    div.style.position = "absolute";
+    div.style.visibility = "hidden";
+    div.style.whiteSpace = "nowrap";
+    div.style.fontFamily = fontFamily;
+    div.style.fontSize = `${fontSize}px`;
+    div.style.lineHeight = "1.2";
+    div.style.padding = "0";
+    div.style.margin = "0";
+    div.style.fontWeight = "normal";
+    div.textContent = text;
+
+    document.body.appendChild(div);
+
+    const width = div.offsetWidth * 1.5;
+    const height = div.offsetHeight;
+
+    document.body.removeChild(div);
+
+    return { width, height };
+  };
+
+
+  const addText = (text: string, fontFamily: string, fontSize: number) => {
+    const { width, height } = measureTextDOM(text, fontFamily, fontSize);
+
+    const newText: ElementComponent = {
+      id: components.length + 1,
+      type: "text",
+      top: 10,
+      left: 10,
+      width,
+      height,
+      z_index: components.length + 1,
+      color: "black",
+      image: "",
+      rotation: 0,
+      name: text,
+      font_family: fontFamily,
+      font_size: fontSize,
+      text: text,
+    };
+
+    setComponents((prev) => [...prev, newText]);
+  };
+
+
   // element attribute update
 
   const updateElementPosition = (id: number, newTop: number, newLeft: number) => {
@@ -273,10 +322,8 @@ export default function DesignModules() {
       saveDesign(designId as string, components);
     }, 500)
 
-    if (components && components.length > 0) {
+    if (components) {
       saveElementsThrottle();
-    } else {
-      console.warn("No components to save!");
     }
   }, [components, designId]);
 
@@ -324,7 +371,11 @@ export default function DesignModules() {
 
       <div className="flex flex-1">
         {/* Sidebar */}
-        <LeftSidebar createShapes={createShapes} />
+        <LeftSidebar
+          createShapes={createShapes}
+          addText={addText}
+          addImage={addImage}
+        />
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col p-4">
@@ -345,7 +396,6 @@ export default function DesignModules() {
                 updateElementPosition={updateElementPosition}
                 handleClickElement={handleClickElement}
                 selectedElement={selectedElement}
-                setSelectedCanvas={setSelectedCanvas}
                 updateElementSize={updateElementSize}
                 updateElementRotation={updateElementRotation}
                 addImage={addImage}

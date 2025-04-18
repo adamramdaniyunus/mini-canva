@@ -30,8 +30,6 @@ export default function Header() {
         body: JSON.stringify({ width: 400, height: 500 }),
       });
       promise = await response.json();
-      console.log(promise, "data create new design");
-      
     } catch (error) {
       console.error("Error creating new design:", error);
       setLoading(false);

@@ -11,7 +11,15 @@ import { TfiText } from "react-icons/tfi";
 import { motion } from "framer-motion";
 
 interface SidebarComponentProps {
-  createShapes: (name: string, type: string) => void;
+  createShapes?: (name: string, type: string) => void;
+  addText?: (text: string, fontFamily: string, fontSize: number) => void;
+  addImage?: ({ clientX, clientY, newWidth, newHeight, blobUrl }: {
+    clientX: number;
+    clientY: number;
+    newWidth: number;
+    newHeight: number;
+    blobUrl: string;
+  }) => void;
 }
 
 const loader = () => (
@@ -51,7 +59,7 @@ const components: Record<string, ComponentType<SidebarComponentProps>> = {
   }),
 };
 
-const LeftSidebar = ({createShapes} : {createShapes: (name: string, type:string) => void;}) => {
+const LeftSidebar = ({ createShapes, addImage, addText }: SidebarComponentProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [state, setState] = useState("");
 
@@ -109,9 +117,8 @@ const LeftSidebar = ({createShapes} : {createShapes: (name: string, type:string)
           <button
             onClick={() => handleShowFeature(item.state)}
             key={i}
-            className={`relative w-full hover:opacity-50 cursor-pointer items-center p-4 h-auto flex flex-col rounded-lg transition-all duration-300 ${
-              state === item.state && "text-white"
-            }`}
+            className={`relative w-full hover:opacity-50 cursor-pointer items-center p-4 h-auto flex flex-col rounded-lg transition-all duration-300 ${state === item.state && "text-white"
+              }`}
           >
             {/* Animasi Indicator */}
             {state === item.state && (
@@ -130,21 +137,23 @@ const LeftSidebar = ({createShapes} : {createShapes: (name: string, type:string)
         ))}
       </aside>
       <div
-        className={`bg-white shadow-md w-72 absolute  h-full top-0 transition-all ease-in-out duration-500 z-30 ${
-          isOpen ? "left-20" : "-left-[205px] -z-1"
-        }`}
+        className={`bg-white shadow-md w-72 absolute  h-full top-0 transition-all ease-in-out duration-500 z-30 ${isOpen ? "left-20" : "-left-[205px] -z-1"
+          }`}
       >
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="absolute -right-[10px] top-1/2 transform -translate-y-1/2 bg-gray-100 active:scale-90 transition-all duration-300 h-20 rounded-r-lg"
         >
           <IoIosArrowBack
-            className={`${
-              isOpen ? "rotate-0" : "rotate-180"
-            } transition-all duration-700`}
+            className={`${isOpen ? "rotate-0" : "rotate-180"
+              } transition-all duration-700`}
           />
         </button>
-        {ComponentToRender && <ComponentToRender createShapes={createShapes}/>}
+        {ComponentToRender && <ComponentToRender
+          createShapes={createShapes}
+          addImage={addImage}
+          addText={addText}
+        />}
       </div>
     </main>
   );

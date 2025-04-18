@@ -3,8 +3,8 @@ import Button from "../Button";
 import InputnLabelNumber from "../InputnLabelNumber";
 import { useDesignState } from "@/context/DesignContext";
 import { useRouter } from "next/navigation";
-import { ElementComponent } from "@/types/Element.type";
-import { saveDesign } from "@/lib/indexDB";
+import { createDesign } from "@/lib/indexDB";
+import { CanvasType } from "@/types/CanvasType";
 
 const SizeInput = ({
   dimensions,
@@ -16,30 +16,45 @@ const SizeInput = ({
   const { setState, setLoading, isLoading } = useDesignState();
   const router = useRouter();
 
-  const CreatNewDesign = async() => {
+  const CreatNewDesign = async () => {
     setLoading(true);
     setState({
       width: Number(dimensions.width),
       height: Number(dimensions.height),
     });
+    let promise: { data: { project_id: string, frame_id: string } } = { data: { project_id: "", frame_id: "" } };
 
-    const newDesignId = Math.floor(Math.random() * 100 + 1).toString();
-    const initialComponents: ElementComponent[] = [
-      {
-        name: "main_frame",
-        type: "main_frame",
-        id: Math.floor(Math.random() * 100 + 1),
-        height: Number(dimensions.height) ?? 400,
-        width: Number(dimensions.width) ?? 500,
-        z_index: 1,
-        color: "#DBDBDB",
-        image: "",
-        top: 0,
-        left: 0,
-      },
-    ];
+    // Call API to create new design
+    try {
+      const response = await fetch("/api/design", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          width: Number(dimensions.width),
+          height: Number(dimensions.height),
+        }),
+      });
+      promise = await response.json();
+    } catch (error) {
+      console.error("Error creating new design:", error);
+      setLoading(false);
+      return;
+    }
 
-    await saveDesign(newDesignId, initialComponents);
+    const newDesignId = promise.data.project_id; // Use the project_id from the response
+    const initialComponents: CanvasType =   {
+      id: promise.data.frame_id,
+      height: Number(dimensions.height) ?? 400,
+      width: Number(dimensions.width) ?? 500,
+      background_color: "#DBDBDB",
+      background_image: "",
+      components: [],
+      project_id: newDesignId,
+    }
+
+    await createDesign(newDesignId, initialComponents);
     setLoading(false);
     router.push(`/design/${newDesignId}/edit`);
   };

@@ -48,7 +48,12 @@ const googleFonts = [
   "Zilla Slab",
 ];
 
-const FontTextLists = () => {
+const FontTextLists = (
+  {
+    addText
+  }: {
+    addText?: (text: string, fontFamily: string, fontSize: number) => void;
+  }) => {
   const [query, setQuery] = useState("");
 
   useEffect(() => {
@@ -62,6 +67,13 @@ const FontTextLists = () => {
   const filteredFonts = googleFonts.filter((font) =>
     font.toLowerCase().includes(query.toLowerCase())
   );
+
+  const handleAddText = (font: string) => {
+    if (addText) {
+      // console.log("Selected font:", font);
+      addText("Edit Text", font, 20); // Example text and size
+    }
+  };
 
   return (
     <LayoutMenu>
@@ -84,6 +96,7 @@ const FontTextLists = () => {
           filteredFonts.map((font) => (
             <h1
               key={font}
+              onClick={() => handleAddText(font)}
               className="border p-2 rounded-md border-gray-200 cursor-pointer hover:bg-gray-100"
               style={{ fontFamily: font }}
             >
