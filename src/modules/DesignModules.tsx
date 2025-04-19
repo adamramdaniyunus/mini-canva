@@ -246,10 +246,16 @@ export default function DesignModules() {
   };
 
 
-  const updateElementSize = (id: number, width: number, height: number) => {
+  const updateElementSize = (id: number, width: number, height: number, fontSize?:number) => {
     setComponents((prev) =>
       prev.map((el) => el.id === id ? { ...el, width, height } : el)
     );
+
+    if(fontSize) {
+      setComponents((prev) =>
+        prev.map((el) => el.id === id ? { ...el, font_size: fontSize } : el)
+      );
+    }
   };
 
   const updateElementRotation = (id: number, rotation: number) => {
