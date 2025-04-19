@@ -11,14 +11,14 @@ const ResizeButton = ({ handleResize, handleRotate }:
             {/* Rotate Button */}
             <div
                 onMouseDown={(e) => handleRotate(e)}
-                className="absolute bg-white border border-black rounded-full cursor-crosshair"
+                className="absolute bg-white border border-black rounded-full cursor-crosshair max-w-[30px] max-h-[30px]"
                 style={{
                     bottom: -40, // di bawah shape
                     left: '50%',
                     transform: 'translateX(-50%)',
                 }}
             >
-                <FaRotate />
+                <FaRotate className='max-w-[25px] max-h-[25px]'/>
             </div>
             {/* Corner Resizers */}
             {["top-left", "top-right", "bottom-left", "bottom-right"].map((dir) => {

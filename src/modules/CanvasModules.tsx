@@ -31,7 +31,7 @@ const Canvas = ({
   updateElementPosition: (id: number, top: number, left: number) => void;
   drawerPosition: { top: number | null; left: number | null };
   setDrawerPosition: React.Dispatch<React.SetStateAction<{ top: number | null; left: number | null }>>
-  updateElementSize: (id: number, width: number, height: number) => void;
+  updateElementSize: (id: number, width: number, height: number, fontSize?:number) => void;
   updateElementRotation: (id: number, rotation: number) => void;
   addImage: ({ clientX, clientY, newWidth, newHeight, blobUrl }: {
     clientX: number;
@@ -115,6 +115,7 @@ const Canvas = ({
     const startHeight = selectedElement.height;
     const startTop = selectedElement.top;
     const startLeft = selectedElement.left;
+    const startFontSize = selectedElement.font_size || 16;
 
     const onMouseMove = throttle((moveEvent: MouseEvent) => {
       const dx = moveEvent.clientX - startX;
@@ -124,6 +125,11 @@ const Canvas = ({
       let newHeight = startHeight;
       let newTop = startTop || 0;
       let newLeft = startLeft || 0;
+
+      const isCornerResize = direction.includes("top") && direction.includes("left") ||
+                       direction.includes("top") && direction.includes("right") ||
+                       direction.includes("bottom") && direction.includes("left") ||
+                       direction.includes("bottom") && direction.includes("right");
 
       if (direction.includes("right")) newWidth += dx; // Increase width
       if (direction.includes("bottom")) newHeight += dy; // Increase height
@@ -139,6 +145,13 @@ const Canvas = ({
       if (newWidth > 20 && newHeight > 20) {
         updateElementSize(selectedElement.id, newWidth, newHeight);
         updateElementPosition(selectedElement.id, newTop, newLeft);
+      }
+
+      if(selectedElement.type === "text" && isCornerResize) {
+        // Calculate the new font size based on the new width and height
+        const scale = newWidth / startWidth;
+        const newFontSize = Math.max(8, Math.round(startFontSize * scale));
+        updateElementSize(selectedElement.id, newWidth, newHeight, newFontSize);
       }
     }, THROTTLE_INTERVAL);
 
@@ -266,23 +279,13 @@ const Canvas = ({
     } else {
       const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
       if (url && url.startsWith('http')) {
-        try {
-          const response = await fetch(url, { mode: 'cors' }); // HARUS server-nya support CORS
-          const blob = await response.blob();
-          await saveImageBlob(Number(newImageId), blob)
-          const blobUrl = URL.createObjectURL(blob);
-          loadImage(blobUrl, dropX, dropY);
+        loadImage(url, dropX, dropY);
 
-          // const fileExt = blob.type.split('/')[1] || 'jpg';
-          // const result = await uploadToSupabase(blob, `url-${Date.now()}.${fileExt}`);
-          // if (result) {
-          //   console.log('Uploaded from URL:', result);
-          // }
-        } catch (error) {
-          console.warn('Gagal ambil gambar dari URL. Kemungkinan karena CORS:', url);
-          console.log(error, "Error");
-          alert('Gagal mengakses gambar dari URL. Server asal mungkin tidak mengizinkan CORS.');
-        }
+        // const fileExt = blob.type.split('/')[1] || 'jpg';
+        // const result = await uploadToSupabase(blob, `url-${Date.now()}.${fileExt}`);
+        // if (result) {
+        //   console.log('Uploaded from URL:', result);
+        // }
       }
     }
   };

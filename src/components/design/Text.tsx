@@ -26,7 +26,7 @@ const Text = ({
         <div
             onMouseDown={(e) => handleMouseDown(e, component)}
             onClick={() => handleClickElement(component)}
-            onDoubleClick={(e) => console.log("double click")}
+            onDoubleClick={() => console.log("double click")}
             key={component.id}
             id={`element-${component.id}`}
             className={`absolute flex items-center cursor-pointer ${isSelected ? 'border-2 border-indigo-500' : ''}`}
@@ -34,7 +34,7 @@ const Text = ({
                 top: component.top,
                 left: component.left,
                 width: component.width,
-                height: component.height,
+                height: "auto",
                 transform: `rotate(${rotate}deg)`,
                 zIndex: component.z_index,
                 fontFamily: component.font_family,
