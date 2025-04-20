@@ -6,7 +6,7 @@ import Canvas from "./CanvasModules";
 import { useEffect, useRef, useState } from "react";
 import { ElementComponent } from "@/types/Element.type";
 import ColorPicker from "@/components/design/ColorPicker";
-import { deleteImageBlob, getImageBlob, loadCanvas, loadDesign, saveCanvas, saveDesign } from "@/lib/indexDB";
+import { deleteImageBlob, loadCanvas, loadDesign, saveCanvas, saveDesign } from "@/lib/indexDB";
 import { debounce } from "lodash";
 import { useParams } from "next/navigation";
 import { CanvasType } from "@/types/CanvasType";
@@ -270,6 +270,43 @@ export default function DesignModules() {
     );
   };
 
+  const updateTextValue = (id: number, text: string) => {
+    setComponents((prev) =>
+      prev.map((el) => el.id === id ? { ...el, text } : el)
+    );
+  }
+
+  const updateFontSize = (id: number, fontSize: number) => {
+    setComponents((prev) =>
+      prev.map((el) => el.id === id ? { ...el, font_size: fontSize } : el)
+    );
+  };
+
+  const updateFontFamily = (id: number, fontFamily: string) => {
+    setComponents((prev) =>
+      prev.map((el) => el.id === id ? { ...el, font_family: fontFamily } : el)
+    );
+  }
+
+  const updateItalic = (id: number, fontItalic: boolean) => {
+    setComponents((prev) =>
+      prev.map((el) => el.id === id ? { ...el, font_italic: fontItalic } : el)
+    );
+  }
+  
+  const updateBold = (id: number, fontBold: boolean) => {
+    setComponents((prev) =>
+      prev.map((el) => el.id === id ? { ...el, font_bold: fontBold } : el)
+    );
+  }
+
+  // update align text
+  const updateAlign = (id: number, align: "left" | "center" | "right" | "justify") => {
+    setComponents((prev) =>
+      prev.map((el) => el.id === id ? { ...el, align } : el)
+    );
+  }
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (!canvasWrapperRef.current) return;
@@ -307,6 +344,31 @@ export default function DesignModules() {
     updateElementZIndex(id, z_index);
   }
 
+  // handle update font size
+  const handleFontSizeChange = (id: number, fontSize: number) => {
+    if(fontSize <= 8 || fontSize >= 100) return;
+    updateFontSize(id, fontSize);
+  }
+
+  // handle update font family
+  const handleFontFamilyChange = (id: number, fontFamily: string) => {
+    updateFontFamily(id, fontFamily);
+  }
+
+  // handle update italic
+  const handleFontItalicChange = (id: number, fontItalic: boolean) => {
+    updateItalic(id, fontItalic);
+  }
+
+  // handle update bold
+  const handleFontBoldChange = (id: number, fontBold: boolean) => {
+    updateBold(id, fontBold);
+  }
+
+  // handle update align text
+  const handleAlignTextChange = (id: number, align: "left" | "center" | "right" | "justify") => {
+    updateAlign(id, align);
+  }
 
   useEffect(() => {
     if (!designId) return;
@@ -350,14 +412,6 @@ export default function DesignModules() {
       setIsLoadDesign(true);
       const storedElements = await loadDesign(designId as string);
       if (!storedElements) return;
-      for (const el of storedElements) {
-        if (el.type === "image") {
-          const blob = await getImageBlob(el.id);
-          const imageUrl = URL.createObjectURL(blob!);
-          el.image = imageUrl;
-        }
-      }
-
       const fixedElements = storedElements.map(el => ({
         ...el,
         top: el.top ?? 0,
@@ -404,6 +458,7 @@ export default function DesignModules() {
                 selectedElement={selectedElement}
                 updateElementSize={updateElementSize}
                 updateElementRotation={updateElementRotation}
+                updateTextValue={updateTextValue}
                 addImage={addImage}
                 newImageId={newImageId}
                 mainFrame={mainframe}
@@ -416,6 +471,11 @@ export default function DesignModules() {
                   handleDeleteElement={handleDeleteElement}
                   handleZIndexChange={handleZIndexChange}
                   selectedCanvas={selectedCanvas}
+                  handleFontSizeChange={handleFontSizeChange}
+                  handleFontFamilyChange={handleFontFamilyChange}
+                  handleAlignTextChange={handleAlignTextChange}
+                  handleFontItalicChange={handleFontItalicChange}
+                  handleFontBoldChange={handleFontBoldChange}
                 />
               )}
             </div>

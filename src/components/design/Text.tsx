@@ -1,5 +1,5 @@
 import { ElementComponent } from '@/types/Element.type';
-import React, { RefObject } from 'react'
+import React, { RefObject, useEffect, useRef, useState } from 'react'
 import ResizeButton from './ResizeButton';
 
 const Text = ({
@@ -10,7 +10,8 @@ const Text = ({
     handleResize,
     handleRotate,
     isRotating,
-    rotate
+    rotate,
+    updateTextValue
 }: {
     component: ElementComponent,
     handleClickElement: (element: ElementComponent) => void,
@@ -20,13 +21,27 @@ const Text = ({
     handleRotate: (e: React.MouseEvent) => void;
     isRotating: RefObject<boolean>;
     rotate: number;
+    updateTextValue: (id: number, value: string) => void;
 }) => {
     const isGradient = component.color?.includes("linear-gradient");
+    const [isEditing, setIsEditing] = useState(false);
+    const [value, setValue] = useState(component.text);
+
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+        if (isEditing && textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
+    }, [isEditing]);
+
+
     return (
         <div
             onMouseDown={(e) => handleMouseDown(e, component)}
             onClick={() => handleClickElement(component)}
-            onDoubleClick={() => console.log("double click")}
+            onDoubleClick={() => setIsEditing(true)}
             key={component.id}
             id={`element-${component.id}`}
             className={`absolute flex items-center cursor-pointer ${isSelected ? 'border-2 border-indigo-500' : ''}`}
@@ -44,6 +59,9 @@ const Text = ({
                 WebkitTextFillColor: isGradient ? "transparent" : undefined,
                 backgroundClip: isGradient ? "text" : undefined,
                 color: isGradient ? "transparent" : component.color,
+                fontStyle: component.font_italic ? 'italic' : 'normal',
+                fontWeight: component.font_bold ? 'bold' : 'normal',
+                textAlign: component.align,
             }}
         >
             {isRotating.current && isSelected && <p className='absolute -top-7 text-indigo-500 text-sm'
@@ -52,7 +70,44 @@ const Text = ({
                 }}>{
                     Math.floor(rotate)}
             </p>}
-            {component.text}
+            {isEditing ? (
+                <textarea
+                    value={value}
+                    ref={textareaRef}
+                    rows={component && component.text!.split('\n').length}
+                    onChange={(e) => {
+                        setValue(e.target.value);
+                        updateTextValue(component.id, e.target.value); // Update value di parent
+                        component.text = e.target.value;
+                    }}
+                    onBlur={() => setIsEditing(false)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            setIsEditing(false); // Enter tanpa Shift keluar dari edit mode
+                        }
+                    }}
+                    autoFocus
+                    className={`bg-transparent border-none outline-none resize-none w-full h-full ${isGradient ? 'text-transparent' : ''}`}
+                    style={{
+                        fontFamily: component.font_family,
+                        fontSize: component.font_size,
+                        color: isEditing ? component.color : 'transparent', // tampilkan warna saat editing
+                        backgroundImage: isGradient && !isEditing ? component.color : undefined,
+                        WebkitBackgroundClip: isGradient && !isEditing ? "text" : undefined,
+                        WebkitTextFillColor: isGradient && !isEditing ? "transparent" : undefined,
+                        backgroundClip: isGradient && !isEditing ? "text" : undefined,
+                        overflow: 'hidden',
+                        minHeight: '1.5em',
+                        caretColor: 'black',
+                        textAlign: component.align,
+                    }}
+                />
+            ) : (
+                <p style={{textAlign: component.align}} className={`w-full whitespace-pre-wrap ${isGradient ? 'text-transparent' : ''}`}>
+                    {component.text}
+                </p>
+            )}
             {/* Resize Handles */}
             {isSelected && <ResizeButton handleResize={handleResize} handleRotate={handleRotate} />}
         </div>

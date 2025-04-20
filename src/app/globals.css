@@ -4,3 +4,23 @@
     height: 8px;
     width: 8px;
 }
+
+@keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  .grey-background {
+    background: linear-gradient(90deg, #4b5563, #6b7280, #d1d5db); /* Gradasi abu-abu */
+    background-size: 300% 300%;
+    animation: gradientShift 5s ease-in-out infinite;
+  }
+  
+  

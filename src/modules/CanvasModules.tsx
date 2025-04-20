@@ -9,6 +9,7 @@ import ImageElement from "@/components/design/ImageElement";
 import { saveImageBlob } from "@/lib/indexDB";
 import { CanvasType } from "@/types/CanvasType";
 import Text from "@/components/design/Text";
+import { uploadToSupabase } from "@/lib/supabase";
 
 const THROTTLE_INTERVAL = 16; // 60 FPS
 
@@ -23,7 +24,8 @@ const Canvas = ({
   updateElementRotation,
   addImage,
   newImageId,
-  mainFrame
+  mainFrame,
+  updateTextValue
 }: {
   components: ElementComponent[],
   handleClickElement: (element: ElementComponent | CanvasType | null) => void;
@@ -42,6 +44,7 @@ const Canvas = ({
   }) => void;
   newImageId: string;
   mainFrame: CanvasType | null;
+  updateTextValue: (id: number, text: string) => void;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -272,20 +275,15 @@ const Canvas = ({
       const blobUrl = URL.createObjectURL(file);
       loadImage(blobUrl, dropX, dropY);
       await saveImageBlob(Number(newImageId), file);
-      // const result = await uploadToSupabase(file, `local-${Date.now()}-${file.name}`);
-      // if (result) {
-      //   console.log('Uploaded from local file:', result);
-      // }
+      const result = await uploadToSupabase(file, `local-${Date.now()}-${file.name}`);
+      if (result) {
+        console.log('Uploaded from local file:', result);
+        loadImage(result, dropX, dropY);
+      }
     } else {
       const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
       if (url && url.startsWith('http')) {
         loadImage(url, dropX, dropY);
-
-        // const fileExt = blob.type.split('/')[1] || 'jpg';
-        // const result = await uploadToSupabase(blob, `url-${Date.now()}.${fileExt}`);
-        // if (result) {
-        //   console.log('Uploaded from URL:', result);
-        // }
       }
     }
   };
@@ -388,6 +386,7 @@ const Canvas = ({
                 handleRotate={handleRotate}
                 isRotating={isRotating}
                 rotate={rotate}
+                updateTextValue={updateTextValue}
               />
             }
 
