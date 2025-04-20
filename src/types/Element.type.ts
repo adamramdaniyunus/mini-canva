@@ -13,4 +13,7 @@ export type ElementComponent = {
   text?: string;
   font_size?: number;
   font_family?: string;
+  font_italic?: boolean;
+  font_bold?: boolean;
+  align?: "left" | "center" | "right" | "justify";
 }
