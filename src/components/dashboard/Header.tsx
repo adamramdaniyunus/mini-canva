@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { signOut } from "next-auth/react";
 import { createDesign } from "@/lib/indexDB";
 import { CanvasType } from "@/types/CanvasType";
+import toast from "react-hot-toast";
 
 export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
@@ -32,6 +33,7 @@ export default function Header() {
       promise = await response.json();
     } catch (error) {
       console.error("Error creating new design:", error);
+      toast.error("Something wrong, please try again later.")
       setLoading(false);
       return;
     }

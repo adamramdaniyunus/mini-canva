@@ -50,9 +50,6 @@ const DesignLists: React.FC = () => {
       </button>
 
       {/* Container Scroll */}
-
-
-
       <div
         ref={scrollRef}
         className="flex overflow-x-auto space-x-4 scrollbar-hide scroll-smooth py-2"
