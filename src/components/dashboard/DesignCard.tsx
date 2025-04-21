@@ -1,17 +1,20 @@
+import { ProjectType } from '@/types/ProjectType';
+import Link from 'next/link';
 import React from 'react'
 
-const DesignCard = ({index} : {index:number}) => {
+const DesignCard = ({project} : {project:ProjectType}) => {
   return (
-    <div
-      className="min-w-[250px] bg-white rounded-lg flex-shrink-0 p-4 shadow-md"
+    <Link 
+      href={`/design/${project.id}/edit`}
+      className="min-w-[250px] bg-white rounded-lg flex-shrink-0 p-4 shadow-md cursor-pointer"
     >
       <img
-        src={`https://placehold.co/250x150?text=Image+${index + 1}`}
-        alt={`Thumbnail ${index + 1}`}
-        className="w-full h-auto rounded-md"
+        src={project.preview_url}
+        alt={project.title}
+        className="w-full h-auto max-h-[200px] rounded-md"
       />
-      <p className="text-center mt-2 font-semibold">DESIGN - {index + 1}</p>
-    </div>
+      <p className="mt-2 font-semibold">{project.title}</p>
+    </Link>
   );
 }
 

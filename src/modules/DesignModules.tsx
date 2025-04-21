@@ -186,6 +186,7 @@ export default function DesignModules() {
     let snappedTop = newTop;
     let snappedLeft = newLeft;
 
+    // snapping feature
     components.forEach((other) => {
       if (other.id === id) return;
 

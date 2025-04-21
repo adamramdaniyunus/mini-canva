@@ -18,7 +18,7 @@ const Button = ({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`px-4 flex items-center justify-center gap-2 w-full py-2 text-sm cursor-pointer active:scale-95 transition-all duration-300  text-white rounded-sm ${
+      className={`px-4 flex items-center justify-center disabled:bg-gray-300 disabled:cursor-wait gap-2 w-full py-2 text-sm cursor-pointer active:scale-95 transition-all duration-300  text-white rounded-sm ${
         BG ? BG : "bg-blue-500 hover:bg-blue-300"
       }`}
     >

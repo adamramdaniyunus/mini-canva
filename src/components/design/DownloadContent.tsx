@@ -3,6 +3,7 @@ import Button from "../Button";
 import LayoutMenu from "./LayoutMenu";
 import { uploadToSupabase } from "@/lib/supabase";
 import { AiOutlineLoading } from "react-icons/ai";
+import { FaTrash } from "react-icons/fa6";
 
 type ImageItem = {
   url: string;
@@ -59,14 +60,14 @@ const DownloadComponent = ({ addImage }: {
   }) => void;
 }) => {
   const [layout, setLayout] = useState<
-    { url: string; width: number; span: string; height: number; isTemp?: boolean }[][]
+    { url: string; width: number; span: string; height: number; isTemp?: boolean; id?:string }[][]
   >([]);
 
   const [isUploading, setUploading] = useState(false);
   const [isLoading, setLoading] = useState(false);
 
   const [images, setImages] = useState<
-    { url: string; width: number; height: number; isTemp: boolean }[]
+    { url: string; width: number; height: number; isTemp: boolean; id?:string }[]
   >([]);
 
   const updateLayoutFromImages = (imageList: typeof images, blobUrl?: string) => {
@@ -100,7 +101,7 @@ const DownloadComponent = ({ addImage }: {
         const responseJSON = await fetch("/api/design/upload");
         const response = await responseJSON.json();
 
-        const imageList = response.data.map((img: { width: number; height: number; url: string }) => ({
+        const imageList = response.data.map((img: { width: number; height: number; url: string; id:string }) => ({
           ...img,
           isTemp: false,
         }));
@@ -147,16 +148,19 @@ const DownloadComponent = ({ addImage }: {
         if (!url) throw new Error("Upload gagal");
 
         // Simpan ke server
-        await fetch("/api/design/upload", {
+        const newData = await fetch("/api/design/upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ width, height, url }),
         });
 
+        const newDataJSON = await newData.json();
+        const data = newDataJSON.data
+  
         // Hapus temp dan tambahkan final image
         const updatedImages = [
           ...images.filter((img) => img.url !== blobUrl),
-          { url, width, height, isTemp: false },
+          { url, width, height, isTemp: false, id: data.id },
         ];
 
         setImages(updatedImages);
@@ -169,6 +173,29 @@ const DownloadComponent = ({ addImage }: {
     }
   };
 
+  const handleDeleteImage = async(url:string, id:string) => {
+    try {
+      const imageDeleted = images.filter((img) => img.id !== id);
+      const grouped = groupImages(
+        imageDeleted.map((img) => ({
+          ...img,
+          span: img.width > img.height ? "col-span-2" : "",
+        }))
+      );
+      setImages(imageDeleted);
+      setLayout(grouped);
+
+      await fetch('/api/design/upload', {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, id }),
+      });
+      return;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
 
   return (
     <LayoutMenu>
@@ -178,7 +205,7 @@ const DownloadComponent = ({ addImage }: {
           if (fileInput) {
             fileInput.click();
           }
-        }} disabled={isUploading}>Upload Images</Button>
+        }} disabled={isUploading}>{isUploading ? "Uploading..." : "Upload Image"}</Button>
         <input
           type="file"
           className="hidden"
@@ -188,11 +215,6 @@ const DownloadComponent = ({ addImage }: {
 
       <div className="overflow-auto h-full space-y-4 p-4">
 
-        {layout.length === 0 && (
-          <div className="text-center text-sm text-gray-400">
-            Image not available
-          </div>
-        )}
 
         {isLoading && (
           <div className="flex justify-center items-center h-full p-4">
@@ -200,24 +222,34 @@ const DownloadComponent = ({ addImage }: {
           </div>
         )}
 
+        {layout.length === 0 && (
+          <div className="text-center text-sm text-gray-400">
+            Image not available
+          </div>
+        )}
         {layout.map((group, index) => (
           <div key={index} className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {group.map((img, i) => (
-              <div key={i} className={`${img.span} relative`} draggable={!img.isTemp} onClick={() => {
-                if (img.isTemp) return;
-                addImage!({
-                  blobUrl: img.url,
-                  clientX: 10,
-                  clientY: 10,
-                  newHeight: img.height / 2,
-                  newWidth: img.width / 2
-                })
-              }}>
+              <div key={i} className={`${img.span} relative`} draggable={!img.isTemp}>
                 <img
                   src={img.url}
-                  className={`w-full h-[100px] rounded-md object-cover`}
+                  onClick={() => {
+                    if (img.isTemp) return;
+                    addImage!({
+                      blobUrl: img.url,
+                      clientX: 10,
+                      clientY: 10,
+                      newHeight: img.height / 2,
+                      newWidth: img.width / 2
+                    })
+                  }}
+                  className={`w-full h-[100px] rounded-md object-cover cursor-pointer`}
                   alt={`Image ${i}`}
                 />
+
+                <button onClick={() => handleDeleteImage(img.url, img.id || "")} className="absolute text-xs p-1 top-1 right-1 cursor-pointer bg-white rounded-sm hover:bg-gray-300">
+                  <FaTrash/>
+                </button>
 
                 {img.isTemp && (
                   <div className="absolute top-0 left-0 h-full w-full grey-background opacity-80 rounded-md">

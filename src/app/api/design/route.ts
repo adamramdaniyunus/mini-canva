@@ -20,3 +20,32 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
+
+export async function GET(req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+    const recent = searchParams.get("recent");
+
+    try {
+        const query = supabase
+            .from("projects")
+            .select()
+            .eq("user_id", "5edf1eff-69b2-481a-800f-81860d8b9f4f")
+            .order("created_at", { ascending: false });
+
+        if (recent === "true") {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const isoToday = today.toISOString();
+
+            query.gte("created_at", isoToday);
+        }
+
+        const { data, error } = await query;
+
+        if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ data }, { status: 200 });
+    } catch (error) {
+        console.log(error, "error server design route");
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
