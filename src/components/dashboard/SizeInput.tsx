@@ -5,6 +5,7 @@ import { useDesignState } from "@/context/DesignContext";
 import { useRouter } from "next/navigation";
 import { createDesign } from "@/lib/indexDB";
 import { CanvasType } from "@/types/CanvasType";
+import toast from "react-hot-toast";
 
 const SizeInput = ({
   dimensions,
@@ -39,6 +40,7 @@ const SizeInput = ({
       promise = await response.json();
     } catch (error) {
       console.error("Error creating new design:", error);
+      toast.error("Something wrong, please try again later.")
       setLoading(false);
       return;
     }

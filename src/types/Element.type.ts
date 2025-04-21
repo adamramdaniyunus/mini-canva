@@ -16,4 +16,5 @@ export type ElementComponent = {
   font_italic?: boolean;
   font_bold?: boolean;
   align?: "left" | "center" | "right" | "justify";
+  uuid: string;
 }

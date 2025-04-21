@@ -10,6 +10,8 @@ import { deleteImageBlob, loadCanvas, loadDesign, saveCanvas, saveDesign } from 
 import { debounce } from "lodash";
 import { useParams } from "next/navigation";
 import { CanvasType } from "@/types/CanvasType";
+import toast from "react-hot-toast";
+import { v4 as uuidv4 } from "uuid";
 
 const SNAP_THRESHOLD = 5; // jarak maksimal untuk snap
 export default function DesignModules() {
@@ -23,6 +25,8 @@ export default function DesignModules() {
   const designId = params?.id;
   const newImageId = Math.floor(Math.random() * 100 + 1).toString();
   const [mainframe, setMainFrame] = useState<CanvasType | null>(null);
+  const [components, setComponents] = useState<ElementComponent[]>([]);
+  const hasUnsavedChanges = useRef(false);
 
   // show color picker
   const handleShowColorPicker = () => {
@@ -81,8 +85,6 @@ export default function DesignModules() {
     }
   };
 
-  const [components, setComponents] = useState<ElementComponent[]>([])
-
   const createShapes = (type: string, name: string) => {
     const newComponent = {
       name: name,
@@ -95,6 +97,7 @@ export default function DesignModules() {
       image: "",
       top: 10,
       left: 10,
+      uuid: uuidv4(),
     };
     setComponents((prev) => [...prev, newComponent]);
   }
@@ -124,6 +127,7 @@ export default function DesignModules() {
       image: blobUrl,
       rotation: 0,
       name: "image",
+      uuid: uuidv4(),
     };
     setComponents((prev) => [...prev, newImage]);
   }
@@ -171,12 +175,12 @@ export default function DesignModules() {
       font_family: fontFamily,
       font_size: fontSize,
       text: text,
+      uuid: uuidv4(),
     };
 
     setComponents((prev) => [...prev, newText]);
   };
-
-
+  
   // element attribute update
 
   const updateElementPosition = (id: number, newTop: number, newLeft: number) => {
@@ -247,12 +251,12 @@ export default function DesignModules() {
   };
 
 
-  const updateElementSize = (id: number, width: number, height: number, fontSize?:number) => {
+  const updateElementSize = (id: number, width: number, height: number, fontSize?: number) => {
     setComponents((prev) =>
       prev.map((el) => el.id === id ? { ...el, width, height } : el)
     );
 
-    if(fontSize) {
+    if (fontSize) {
       setComponents((prev) =>
         prev.map((el) => el.id === id ? { ...el, font_size: fontSize } : el)
       );
@@ -294,7 +298,7 @@ export default function DesignModules() {
       prev.map((el) => el.id === id ? { ...el, font_italic: fontItalic } : el)
     );
   }
-  
+
   const updateBold = (id: number, fontBold: boolean) => {
     setComponents((prev) =>
       prev.map((el) => el.id === id ? { ...el, font_bold: fontBold } : el)
@@ -347,7 +351,7 @@ export default function DesignModules() {
 
   // handle update font size
   const handleFontSizeChange = (id: number, fontSize: number) => {
-    if(fontSize <= 8 || fontSize >= 100) return;
+    if (fontSize <= 8 || fontSize >= 100) return;
     updateFontSize(id, fontSize);
   }
 
@@ -389,6 +393,7 @@ export default function DesignModules() {
     if (!designId) return;
     const saveElementsThrottle = debounce(() => {
       saveDesign(designId as string, components);
+      hasUnsavedChanges.current = true;
     }, 500)
 
     if (components) {
@@ -400,6 +405,7 @@ export default function DesignModules() {
     if (!designId) return;
     const saveElementsThrottle = debounce(() => {
       saveCanvas(designId as string, mainframe as CanvasType);
+      hasUnsavedChanges.current = true;
     }, 500)
 
     if (mainframe) {
@@ -425,6 +431,50 @@ export default function DesignModules() {
 
     loadDesigns();
   }, [designId])
+
+
+  // auto save 
+
+  const saveProjectToDB = () => {
+    if (!mainframe || !components) return;
+    // Debounced function to prevent rapid save calls
+    const debouncedSave = debounce(async () => {
+      if (hasUnsavedChanges.current) {
+        console.log("Saving...");
+        await fetch('/api/design', {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ mainFrame: mainframe, components }),
+        });
+
+        // Reset flag after saving
+        hasUnsavedChanges.current = false;
+        // then give notif
+        toast.success('All changes saved.', {
+          position: 'bottom-center',
+          style: {
+            padding: '8px',
+            color: '#713200',
+          },
+          iconTheme: {
+            primary: '#713200',
+            secondary: '#FFFAEE',
+          },
+        });
+      }
+    }, 1000); // debounce for 1 second (adjust as necessary)
+
+    // Execute the debounced function
+    debouncedSave();
+  };
+
+  useEffect(() => {
+    const interval = setInterval(saveProjectToDB, 10000); // interval every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [mainframe, components]);
 
   return (
     <div className="h-screen flex flex-col">

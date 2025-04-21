@@ -46,9 +46,7 @@ const Canvas = ({
   mainFrame: CanvasType | null;
   updateTextValue: (id: number, text: string) => void;
 }) => {
-  const ref = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
-
   // const mainFrame = components.find((c) => c.name === "main_frame");
   const otherComponents = components.filter((c) => c.name !== "main_frame");
   const dragOffset = useRef({ x: 0, y: 0 });
@@ -83,7 +81,7 @@ const Canvas = ({
       const newLeft = moveEvent.clientX - dragOffset.current.x;
       const newTop = moveEvent.clientY - dragOffset.current.y;
 
-      const parentRect = ref.current?.getBoundingClientRect();
+      const parentRect = canvasRef.current?.getBoundingClientRect();
       const relativeLeft = newLeft - (parentRect?.left || 0);
       const relativeTop = newTop - (parentRect?.top || 0);
 
@@ -290,11 +288,11 @@ const Canvas = ({
 
   return (
     <div className="flex justify-center items-center relative">
-      <div ref={ref} className="relative w-auto h-auto overflow-auto">
+      <div className="relative w-auto h-auto">
         <div
           ref={canvasRef}
           onMouseDown={() => handleClickElement(mainFrame)}
-          className={`${isLoading && 'blur-[5px] pointer-events-none transition-all duration-300 ease-in'} relative hover:border-[3px] hover:border-indigo-400 shadow-md ${selectedElement?.id === mainFrame?.id ? 'border-[3px] border-indigo-500' : ''}`}
+          className={`${isLoading && 'blur-[5px] pointer-events-none transition-all duration-300 ease-in'}  overflow-auto relative hover:border-[3px] hover:border-indigo-400 shadow-md ${selectedElement?.id === mainFrame?.id ? 'border-[3px] border-indigo-500' : ''}`}
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
           style={{
