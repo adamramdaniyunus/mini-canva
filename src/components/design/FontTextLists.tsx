@@ -47,7 +47,9 @@ const FontTextLists = (
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-        <Button>Add Text To Design</Button>
+        <Button
+          onClick={() => handleAddText("normal")}
+        >Add Text To Design</Button>
       </div>
 
       <div className="overflow-auto h-full space-y-4 p-4">

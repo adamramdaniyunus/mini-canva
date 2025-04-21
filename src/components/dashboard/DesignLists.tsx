@@ -1,10 +1,13 @@
 "use client"
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import DesignCard from "./DesignCard";
+import { ProjectType } from "@/types/ProjectType";
 
 const DesignLists: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement | null>(null); // Menentukan tipe ref
+  const [projects, setProjects] = useState<ProjectType[]>([]);
+  const [isLoading, setLoading] = useState(false);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -15,6 +18,25 @@ const DesignLists: React.FC = () => {
       });
     }
   };
+
+  useEffect(() => {
+    if (projects.length > 0) return;
+
+    const getDataProjects = async () => {
+      try {
+        setLoading(true);
+        const rawData = await fetch('/api/design?recent=true');
+        const { data } = await rawData.json();
+        setProjects(data);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    getDataProjects();
+  }, [projects.length])
 
   return (
     <div className="relative w-full mx-auto">
@@ -28,12 +50,29 @@ const DesignLists: React.FC = () => {
       </button>
 
       {/* Container Scroll */}
+
+
+
       <div
         ref={scrollRef}
         className="flex overflow-x-auto space-x-4 scrollbar-hide scroll-smooth py-2"
       >
-        {Array.from({ length: 6 }).map((_, index) => (
-         <DesignCard key={index} index={index}/>
+        {isLoading && Array.from({ length: 6 }).map((_, index) => (
+          <div
+            key={index}
+            className="min-w-[250px] h-[200px] rounded-lg flex-shrink-0 p-4 shadow-md grey-background "
+          >
+          </div>
+        ))}
+
+        {projects.length == 0 && (
+          <div className="text-center flex justify-center w-full text-sm text-gray-400">
+            Add ur new Project now!
+          </div>
+        )}
+
+        {projects.map((project, index) => (
+          <DesignCard key={index} project={project} />
         ))}
       </div>
 

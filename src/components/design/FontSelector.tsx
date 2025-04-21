@@ -13,6 +13,11 @@ export default function FontSelector({
 }) {
     const [isOpen, setIsOpen] = useState(false);
 
+    const handleChangeFontFamily = (id:number, newFont:string) => {
+        handleFontFamilyChange(id, newFont);
+        selectedElement.font_family = newFont;
+    }
+
     useEffect(() => {
         import("webfontloader").then((WebFont) => {
             WebFont.load({
@@ -27,7 +32,7 @@ export default function FontSelector({
             <button
                 title="Change font family"
                 onClick={() => setIsOpen((prev) => !prev)}
-                className="px-2 bg-gray-100 hover:bg-gray-300 rounded cursor-pointer"
+                className="px-2 bg-gray-100 whitespace-nowrap hover:bg-gray-300 rounded cursor-pointer"
                 style={{
                     fontFamily: selectedElement?.font_family,
                 }}
@@ -41,7 +46,7 @@ export default function FontSelector({
                         <div
                             key={font}
                             onClick={() => {
-                                handleFontFamilyChange(selectedElement.id, font);
+                                handleChangeFontFamily(selectedElement.id, font);
                                 setIsOpen(false); // tutup dropdown
                             }}
                             style={{ fontFamily: font }}
