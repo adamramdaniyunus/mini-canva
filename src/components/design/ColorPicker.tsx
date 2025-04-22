@@ -5,6 +5,7 @@ import { IoColorPaletteOutline } from "react-icons/io5";
 import { CgClose, CgColorBucket } from "react-icons/cg";
 import { useState } from "react";
 import GradientPicker from "./GradientPicker";
+import { ElementComponent } from "@/types/Element.type";
 
 const defaultColors = ["#000000", "#2B2710", "#B34721", "#DDD0C0", "#EDE6DE"];
 const colorData = [
@@ -138,10 +139,12 @@ const ColorPicker = ({
     handleShowColorPicker,
     handleChangeColor,
     color: pickColor,
+    selectedElement
 }: {
     handleShowColorPicker: () => void;
     handleChangeColor: (color: string) => void;
     color: string;
+    selectedElement: ElementComponent | null;
 }) => {
     const [colors, setColors] = useState(defaultColors);
     const [showPicker, setShowPicker] = useState(false);
@@ -200,28 +203,28 @@ const ColorPicker = ({
                         <div className="absolute top-8 left-0 z-10 p-2 bg-white shadow rounded">
                             <div className="flex gap-4">
                                 <button onClick={() => setColorPalettes("basic")} className={`text-xs font-semibold px-2 cursor-pointer py-3 ${colorPalettes == 'basic' && 'border-indigo-500 border-b-2'}`}>Basic Color</button>
-                                <button onClick={() => setColorPalettes("gradient")} className={`text-xs font-semibold px-2 cursor-pointer py-3 ${colorPalettes == 'gradient' && 'border-indigo-500 border-b-2'}`}>Gradient</button>
+                                {selectedElement?.type !== 'text' && <button onClick={() => setColorPalettes("gradient")} className={`text-xs font-semibold px-2 cursor-pointer py-3 ${colorPalettes == 'gradient' && 'border-indigo-500 border-b-2'}`}>Gradient</button>}
                             </div>
                             {colorPalettes === "basic" ? (
                                 <div className="mt-3">
-                                    <HexColorPicker style={{height: 150}} color={newColor} onChange={setNewColor} />
+                                    <HexColorPicker style={{ height: 150 }} color={newColor} onChange={setNewColor} />
                                     <div className="mt-2">
                                         <Button onClick={handleAddColor}>
                                             Add
                                         </Button>
                                     </div>
                                 </div>
-                            ) : (
+                            ) : selectedElement?.type !== 'text' && (
                                 <div>
-                                 <GradientPicker 
-                                    gradientStart={gradientStart}
-                                    gradientEnd={gradientEnd}
-                                    setGradientStart={setGradientStart}
-                                    setGradientEnd={setGradientEnd}
-                                    gradientAngle={gradientAngle}
-                                    setGradientAngle={setGradientAngle}
-                                    handleAddGradient={handleAddGradient}
-                                 />
+                                    <GradientPicker
+                                        gradientStart={gradientStart}
+                                        gradientEnd={gradientEnd}
+                                        setGradientStart={setGradientStart}
+                                        setGradientEnd={setGradientEnd}
+                                        gradientAngle={gradientAngle}
+                                        setGradientAngle={setGradientAngle}
+                                        handleAddGradient={handleAddGradient}
+                                    />
                                 </div>
                             )}
 
@@ -243,14 +246,14 @@ const ColorPicker = ({
                     </div>
                 </div>
 
-                <div className="flex-col flex gap-4 mt-5">
+                {selectedElement?.type !== 'text' && <div className="flex-col flex gap-4 mt-5">
                     <h2 className="font-semibold text-sm flex items-center gap-2"><span><IoColorPaletteOutline /></span> Gradient Color</h2>
                     <div className="flex flex-wrap gap-2">
                         {gradientColors.map((color, index) => (
                             colorPalettesRender({ color: color.gradient, index })
                         ))}
                     </div>
-                </div>
+                </div>}
             </div>
         </div>
     )

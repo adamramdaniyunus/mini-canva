@@ -1,8 +1,32 @@
+"use client"
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import React from 'react'
 import { BiFolder, BiHome } from 'react-icons/bi';
 import { LuLayoutTemplate } from 'react-icons/lu';
 
 const Sidebar = () => {
+  const params = usePathname();
+
+  const urls = [
+    {
+      url: '/dashboard',
+      icon: <span className='text-lg'><BiHome /></span>,
+      title: 'Home'
+    },
+    {
+      url: '/dashboard/projects',
+      icon:  <span className='text-lg'><BiFolder /></span>,
+      title: 'Projects'
+    },
+    {
+      url: '/dashboard/templates',
+      icon:   <span className='text-lg'><LuLayoutTemplate /></span>,
+      title: 'Templates'
+    },
+  ]
+
   return (
     <>
       <aside className="w-64 p-5 sticky top-0 left-0">
@@ -18,15 +42,13 @@ const Sidebar = () => {
           </div>
         </div>
         <ul className="mt-4 space-y-2">
-          <li className="p-2 flex items-center gap-2 hover:bg-gray-200 bg-gray-200 rounded active:bg-gray-100 transition-all duration-300 cursor-pointer">
-            <span className='text-lg'><BiHome/></span> Home
-          </li>
-          <li className="p-2 flex items-center gap-2 hover:bg-gray-200  rounded active:bg-gray-100 transition-all duration-300 cursor-pointer">
-            <span className='text-lg'><BiFolder/></span> Projects
-          </li>
-          <li className="p-2 flex items-center gap-2 hover:bg-gray-200  rounded active:bg-gray-100 transition-all duration-300 cursor-pointer">
-            <span className='text-lg'><LuLayoutTemplate/></span> Templates
-          </li>
+          {urls.map((link, index) => (
+            <li key={index} className={`hover:bg-gray-200 ${params === link.url && "bg-gray-200"} rounded active:bg-gray-100 transition-all duration-300 cursor-pointer`}>
+              <Link href={link.url} className='p-2 flex items-center gap-2 w-full h-full'>
+                {link.icon} {link.title}
+              </Link>
+            </li>
+          ))}
         </ul>
       </aside>
     </>

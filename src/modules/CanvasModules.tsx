@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { RefObject, useRef, useState } from "react";
 import { ElementComponent } from "@/types/Element.type";
 import Rect from "@/components/design/Rect";
 import Circle from "@/components/design/Circle";
@@ -25,7 +25,10 @@ const Canvas = ({
   addImage,
   newImageId,
   mainFrame,
-  updateTextValue
+  updateTextValue,
+  handleIsTyping,
+  handleChange,
+  canvasRef
 }: {
   components: ElementComponent[],
   handleClickElement: (element: ElementComponent | CanvasType | null) => void;
@@ -33,7 +36,7 @@ const Canvas = ({
   updateElementPosition: (id: number, top: number, left: number) => void;
   drawerPosition: { top: number | null; left: number | null };
   setDrawerPosition: React.Dispatch<React.SetStateAction<{ top: number | null; left: number | null }>>
-  updateElementSize: (id: number, width: number, height: number, fontSize?:number) => void;
+  updateElementSize: (id: number, width: number, height: number, fontSize?: number) => void;
   updateElementRotation: (id: number, rotation: number) => void;
   addImage: ({ clientX, clientY, newWidth, newHeight, blobUrl }: {
     clientX: number;
@@ -45,8 +48,10 @@ const Canvas = ({
   newImageId: string;
   mainFrame: CanvasType | null;
   updateTextValue: (id: number, text: string) => void;
+  handleIsTyping: () => void;
+  handleChange: () => void;
+  canvasRef: RefObject<HTMLDivElement | null>;
 }) => {
-  const canvasRef = useRef<HTMLDivElement>(null);
   // const mainFrame = components.find((c) => c.name === "main_frame");
   const otherComponents = components.filter((c) => c.name !== "main_frame");
   const dragOffset = useRef({ x: 0, y: 0 });
@@ -91,6 +96,7 @@ const Canvas = ({
 
 
     const handleMouseUp = () => {
+      handleChange();
       isDragging.current = false;
       setDrawerPosition({ top: null, left: null }); // Clear drawer lines
       document.removeEventListener("mousemove", handleMouseMove);
@@ -128,9 +134,9 @@ const Canvas = ({
       let newLeft = startLeft || 0;
 
       const isCornerResize = direction.includes("top") && direction.includes("left") ||
-                       direction.includes("top") && direction.includes("right") ||
-                       direction.includes("bottom") && direction.includes("left") ||
-                       direction.includes("bottom") && direction.includes("right");
+        direction.includes("top") && direction.includes("right") ||
+        direction.includes("bottom") && direction.includes("left") ||
+        direction.includes("bottom") && direction.includes("right");
 
       if (direction.includes("right")) newWidth += dx; // Increase width
       if (direction.includes("bottom")) newHeight += dy; // Increase height
@@ -148,7 +154,7 @@ const Canvas = ({
         updateElementPosition(selectedElement.id, newTop, newLeft);
       }
 
-      if(selectedElement.type === "text" && isCornerResize) {
+      if (selectedElement.type === "text" && isCornerResize) {
         // Calculate the new font size based on the new width and height
         const scale = newWidth / startWidth;
         const newFontSize = Math.max(8, Math.round(startFontSize * scale));
@@ -290,9 +296,10 @@ const Canvas = ({
     <div className="flex justify-center items-center relative">
       <div className="relative w-auto h-auto">
         <div
+          id="canvas-design"
           ref={canvasRef}
           onMouseDown={() => handleClickElement(mainFrame)}
-          className={`${isLoading && 'blur-[5px] pointer-events-none transition-all duration-300 ease-in'}  overflow-auto relative hover:border-[3px] hover:border-indigo-400 shadow-md ${selectedElement?.id === mainFrame?.id ? 'border-[3px] border-indigo-500' : ''}`}
+          className={`${isLoading && 'blur-[5px] pointer-events-none transition-all duration-300 ease-in'}  overflow-hidden relative hover:border-[3px] hover:border-indigo-400 shadow-md ${selectedElement?.id === mainFrame?.id ? 'border-[3px] border-indigo-500' : ''}`}
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
           style={{
@@ -300,11 +307,13 @@ const Canvas = ({
             height: mainFrame ? mainFrame.height : 400,
             background: mainFrame ? mainFrame.background_color : "#DBDBDB",
             zIndex: 1,
+            userSelect: 'none'
           }}
         >
           {/* If there's a background image */}
           {mainFrame && mainFrame.background_image && (
             <img
+              draggable={false}
               className="w-full h-full object-cover"
               src={mainFrame.background_image}
               alt="canvas"
@@ -312,7 +321,7 @@ const Canvas = ({
           )}
 
           {/* Render shapes or other components inside main_frame */}
-          {otherComponents.map((component) => {
+          {otherComponents.map((component, index) => {
             const isSelected = selectedElement?.id === component.id;
 
             if (component.name === "rect" && component.type === "shape") {
@@ -320,7 +329,7 @@ const Canvas = ({
                 component={component}
                 handleClickElement={handleClickElement}
                 isSelected={isSelected}
-                key={component.id}
+                key={index}
                 handleMouseDown={handleMouseDown}
                 handleResize={handleResize}
                 handleRotate={handleRotate}
@@ -334,7 +343,7 @@ const Canvas = ({
                 component={component}
                 handleClickElement={handleClickElement}
                 isSelected={isSelected}
-                key={component.id}
+                key={index}
                 handleMouseDown={handleMouseDown}
                 handleResize={handleResize}
                 handleRotate={handleRotate}
@@ -348,7 +357,7 @@ const Canvas = ({
                 component={component}
                 handleClickElement={handleClickElement}
                 isSelected={isSelected}
-                key={component.id}
+                key={index}
                 handleMouseDown={handleMouseDown}
                 handleResize={handleResize}
                 handleRotate={handleRotate}
@@ -363,7 +372,7 @@ const Canvas = ({
                   component={component}
                   handleClickElement={handleClickElement}
                   isSelected={isSelected}
-                  key={component.id}
+                  key={index}
                   handleMouseDown={handleMouseDown}
                   handleResize={handleResize}
                   handleRotate={handleRotate}
@@ -378,13 +387,14 @@ const Canvas = ({
                 component={component}
                 handleClickElement={handleClickElement}
                 isSelected={isSelected}
-                key={component.id}
+                key={index}
                 handleMouseDown={handleMouseDown}
                 handleResize={handleResize}
                 handleRotate={handleRotate}
                 isRotating={isRotating}
                 rotate={rotate}
                 updateTextValue={updateTextValue}
+                handleIsTyping={handleIsTyping}
               />
             }
 

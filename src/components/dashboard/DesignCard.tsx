@@ -6,9 +6,10 @@ const DesignCard = ({project} : {project:ProjectType}) => {
   return (
     <Link 
       href={`/design/${project.id}/edit`}
-      className="min-w-[250px] bg-white rounded-lg flex-shrink-0 p-4 shadow-md cursor-pointer"
+      className="w-[250px] bg-white rounded-lg flex-shrink-0 p-4 shadow-md cursor-pointer"
     >
       <img
+        loading='lazy'
         src={project.preview_url}
         alt={project.title}
         className="w-full h-auto max-h-[200px] rounded-md"

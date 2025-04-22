@@ -24,6 +24,9 @@ const getDB = async () => {
         if (!db.objectStoreNames.contains("canvas")) {
           db.createObjectStore("canvas");
         }
+        if (!db.objectStoreNames.contains("projects")) {
+          db.createObjectStore("projects");
+        }
       },
     });
   }
@@ -79,6 +82,10 @@ export const saveCanvas = async (designId: string, canvas: CanvasType) => {
   await db?.put("canvas", canvas, designId);
 };
 
+export const saveProjects = async (designId: string, project: string) => {
+  const db = await getDB();
+  await db?.put("projects", project, designId);
+};
 
 export const loadDesign = async (designId: string): Promise<ElementComponent[] | null> => {
   const db = await getDB();
@@ -89,4 +96,10 @@ export const loadCanvas= async (designId: string): Promise<CanvasType | null> =>
   const db = await getDB();
   return await db?.get("canvas", designId);
 };
+
+export const loadProject = async (designId: string): Promise<string> => {
+  const db = await getDB();
+  return await db?.get("projects", designId);
+};
+
 

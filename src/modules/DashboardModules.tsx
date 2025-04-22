@@ -12,7 +12,7 @@ const DashboardModules = () => {
 
           <div className="mt-6">
             <h1 className="text-lg font-semibold drop-shadow-sm">
-              You recent designs
+              You recent activities
             </h1>
 
             <div className="mt-2">

@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getFileNameFromUrl, supabase } from "@/lib/supabase";
 import { ElementComponent } from "@/types/Element.type";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -24,22 +24,14 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
-    const recent = searchParams.get("recent");
+    const id = searchParams.get("id");
 
     try {
         const query = supabase
-            .from("projects")
-            .select()
-            .eq("user_id", "5edf1eff-69b2-481a-800f-81860d8b9f4f")
-            .order("created_at", { ascending: false });
-
-        if (recent === "true") {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const isoToday = today.toISOString();
-
-            query.gte("created_at", isoToday);
-        }
+            .from("main_frames")
+            .select("*")
+            .eq("project_id", id)
+            .maybeSingle()
 
         const { data, error } = await query;
 
@@ -52,8 +44,35 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-    const { mainFrame, components } = await req.json();
+    const { mainFrame, components, preview_url } = await req.json();
     try {
+        if (preview_url) {
+            const { data: project, error: getError } = await supabase
+                .from("projects")
+                .select("preview_url")
+                .eq("id", mainFrame.project_id)
+                .single();
+
+
+            if (getError) {
+                console.error("Gagal mengambil project:", getError.message);
+            }
+
+            if (project?.preview_url) {
+                const fileURL = getFileNameFromUrl(project.preview_url)
+                await supabase
+                    .storage
+                    .from('mini-canva')
+                    .remove([`preview/${fileURL}`]);
+            }
+
+            await supabase
+                .from("projects")
+                .update({ updated_at: new Date().toISOString(), preview_url })
+                .eq("id", mainFrame.project_id);
+
+        }
+
         // Update main frame
         await supabase
             .from("main_frames")
@@ -102,7 +121,7 @@ export async function PUT(req: NextRequest) {
                 );
 
             if (insertError) {
-                throw new Error(insertError.message);
+                return NextResponse.json({ error: "Insert Error" }, { status: 500 });
             }
         }
 
