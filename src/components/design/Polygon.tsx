@@ -10,7 +10,7 @@ const Polygon = ({
     handleResize,
     handleRotate,
     isRotating,
-    rotate
+    rotate,
 }: {
     component: ElementComponent,
     handleClickElement: (element: ElementComponent) => void,

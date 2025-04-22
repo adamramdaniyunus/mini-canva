@@ -25,7 +25,7 @@ const DesignLists: React.FC = () => {
     const getDataProjects = async () => {
       try {
         setLoading(true);
-        const rawData = await fetch('/api/design?recent=true');
+        const rawData = await fetch('/api/project?recent=true');
         const { data } = await rawData.json();
         setProjects(data);
       } catch (error) {
@@ -57,7 +57,7 @@ const DesignLists: React.FC = () => {
         {isLoading && Array.from({ length: 6 }).map((_, index) => (
           <div
             key={index}
-            className="min-w-[250px] h-[200px] rounded-lg flex-shrink-0 p-4 shadow-md grey-background "
+            className="w-[250px] h-[200px] rounded-lg flex-shrink-0 p-4 shadow-md grey-background "
           >
           </div>
         ))}

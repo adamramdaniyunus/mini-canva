@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getFileNameFromUrl, supabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -39,10 +39,11 @@ export async function DELETE(req: NextRequest) {
     const { url, id } = await req.json();
     try {
 
+        const fileURL = getFileNameFromUrl(url)
         const { error } = await supabase
             .storage
-            .from('avatars')
-            .remove([`mini-canva/${url}`]);
+            .from('mini-canva')
+            .remove([`uploads/${fileURL}`]);
 
         if (error) return NextResponse.json({ error: "Error when delete image" }, { status: 500 });
 

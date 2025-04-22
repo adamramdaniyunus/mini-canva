@@ -20,6 +20,7 @@ interface SidebarComponentProps {
     newHeight: number;
     blobUrl: string;
   }) => void;
+  handleChangeBackground? : (url:string) => void;
 }
 
 const loader = () => (
@@ -29,10 +30,10 @@ const loader = () => (
 );
 
 const components: Record<string, ComponentType<SidebarComponentProps>> = {
-  design: dynamic(() => import("./DesignTemplate"), {
-    ssr: false,
-    loading: () => loader(),
-  }),
+  // design: dynamic(() => import("./DesignTemplate"), {
+  //   ssr: false,
+  //   loading: () => loader(),
+  // }),
   shape: dynamic(() => import("./ShapesTemplate"), {
     ssr: false,
     loading: () => loader(),
@@ -59,13 +60,13 @@ const components: Record<string, ComponentType<SidebarComponentProps>> = {
   }),
 };
 
-const LeftSidebar = ({ createShapes, addImage, addText }: SidebarComponentProps) => {
+const LeftSidebar = ({ createShapes, addImage, addText, handleChangeBackground }: SidebarComponentProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [state, setState] = useState("");
 
   const handleShowFeature = (state = "") => {
     setState(state);
-    if (!isOpen) {
+    if (!isOpen && state !== "design") {
       setIsOpen(true);
     }
   };
@@ -108,7 +109,7 @@ const LeftSidebar = ({ createShapes, addImage, addText }: SidebarComponentProps)
     },
   ];
 
-  const ComponentToRender = components[state] || components["design"];
+  const ComponentToRender = components[state] || components["shape"];
 
   return (
     <main className="relative">
@@ -153,6 +154,7 @@ const LeftSidebar = ({ createShapes, addImage, addText }: SidebarComponentProps)
           createShapes={createShapes}
           addImage={addImage}
           addText={addText}
+          handleChangeBackground={handleChangeBackground}
         />}
       </div>
     </main>

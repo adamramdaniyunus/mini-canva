@@ -11,7 +11,8 @@ const Text = ({
     handleRotate,
     isRotating,
     rotate,
-    updateTextValue
+    updateTextValue,
+    handleIsTyping,
 }: {
     component: ElementComponent,
     handleClickElement: (element: ElementComponent) => void,
@@ -22,6 +23,7 @@ const Text = ({
     isRotating: RefObject<boolean>;
     rotate: number;
     updateTextValue: (id: number, value: string) => void;
+    handleIsTyping: () => void;
 }) => {
     const isGradient = component.color?.includes("linear-gradient");
     const [isEditing, setIsEditing] = useState(false);
@@ -39,9 +41,14 @@ const Text = ({
 
     return (
         <div
-            onMouseDown={(e) => handleMouseDown(e, component)}
+            onMouseDown={(e) => {
+                if (!isEditing) handleMouseDown(e, component);
+            }}
             onClick={() => handleClickElement(component)}
-            onDoubleClick={() => setIsEditing(true)}
+            onDoubleClick={() => {
+                setIsEditing(true)
+                handleIsTyping()
+            }}
             key={component.id}
             id={`element-${component.id}`}
             className={`absolute flex items-center cursor-pointer ${isSelected ? 'border-2 border-indigo-500' : ''}`}
@@ -80,11 +87,15 @@ const Text = ({
                         updateTextValue(component.id, e.target.value); // Update value di parent
                         component.text = e.target.value;
                     }}
-                    onBlur={() => setIsEditing(false)}
+                    onBlur={() => {
+                        setIsEditing(false)
+                        handleIsTyping()
+                    }}
                     onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
                             setIsEditing(false); // Enter tanpa Shift keluar dari edit mode
+                            handleIsTyping()
                         }
                     }}
                     autoFocus
@@ -104,7 +115,7 @@ const Text = ({
                     }}
                 />
             ) : (
-                <p style={{textAlign: component.align}} className={`w-full whitespace-pre-wrap ${isGradient ? 'text-transparent' : ''}`}>
+                <p style={{ textAlign: component.align }} className={`w-full whitespace-pre-wrap ${isGradient ? 'text-transparent' : ''}`}>
                     {component.text}
                 </p>
             )}

@@ -116,7 +116,7 @@ const DownloadComponent = ({ addImage }: {
     };
 
     getFileUploads();
-  }, [layout.length]);
+  }, [layout.length, updateLayoutFromImages]);
 
 
 

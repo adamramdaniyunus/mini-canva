@@ -3,7 +3,7 @@ import Button from "../Button";
 import InputnLabelNumber from "../InputnLabelNumber";
 import { useDesignState } from "@/context/DesignContext";
 import { useRouter } from "next/navigation";
-import { createDesign } from "@/lib/indexDB";
+import { createDesign, saveProjects } from "@/lib/indexDB";
 import { CanvasType } from "@/types/CanvasType";
 import toast from "react-hot-toast";
 
@@ -46,7 +46,7 @@ const SizeInput = ({
     }
 
     const newDesignId = promise.data.project_id; // Use the project_id from the response
-    const initialComponents: CanvasType =   {
+    const initialComponents: CanvasType = {
       id: promise.data.frame_id,
       height: Number(dimensions.height) ?? 400,
       width: Number(dimensions.width) ?? 500,
@@ -57,6 +57,7 @@ const SizeInput = ({
     }
 
     await createDesign(newDesignId, initialComponents);
+    await saveProjects(newDesignId, "Untitled Project")
     setLoading(false);
     router.push(`/design/${newDesignId}/edit`);
   };

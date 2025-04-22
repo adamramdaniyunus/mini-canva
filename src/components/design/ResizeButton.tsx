@@ -11,7 +11,7 @@ const ResizeButton = ({ handleResize, handleRotate }:
             {/* Rotate Button */}
             <div
                 onMouseDown={(e) => handleRotate(e)}
-                className="absolute bg-white border border-black rounded-full cursor-crosshair max-w-[30px] max-h-[30px]"
+                className="absolute bg-white border text-black border-black rounded-full cursor-crosshair max-w-[30px] max-h-[30px]"
                 style={{
                     bottom: -40, // di bawah shape
                     left: '50%',

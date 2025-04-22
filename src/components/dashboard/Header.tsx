@@ -5,7 +5,7 @@ import { useDesignState } from "@/context/DesignContext";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { signOut } from "next-auth/react";
-import { createDesign } from "@/lib/indexDB";
+import { createDesign, saveProjects } from "@/lib/indexDB";
 import { CanvasType } from "@/types/CanvasType";
 import toast from "react-hot-toast";
 
@@ -50,6 +50,7 @@ export default function Header() {
     };
 
     await createDesign(newDesignId, initialComponents);
+    await saveProjects(newDesignId, "Untitled Project")
     setLoading(false);
     router.push(`/design/${newDesignId}/edit`);
   };
