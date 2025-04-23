@@ -1,8 +1,18 @@
+import { authOptions } from "@/lib/nexauth";
 import { getFileNameFromUrl, supabase } from "@/lib/supabase";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
     const { width, height, url } = await req.json();
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+  
+    const userId = session.user.id;
+  
     try {
         const { data, error } = await supabase
             .from("uploads")
@@ -10,7 +20,7 @@ export async function POST(req: NextRequest) {
                 width,
                 height,
                 url,
-                user_id: "5edf1eff-69b2-481a-800f-81860d8b9f4f"
+                user_id: userId
             })
             .select();
 
@@ -23,11 +33,17 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+    const userId = session.user.id;
+  
     try {
         const { data } = await supabase
             .from("uploads")
             .select("*")
-            .eq('user_id', '5edf1eff-69b2-481a-800f-81860d8b9f4f');
+            .eq('user_id', userId);
         return NextResponse.json({ data }, { status: 200 });
     } catch (error) {
         console.log(error, "error server design route");

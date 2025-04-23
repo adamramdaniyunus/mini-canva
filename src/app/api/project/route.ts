@@ -1,15 +1,23 @@
+import { authOptions } from "@/lib/nexauth";
 import { supabase } from "@/lib/supabase";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const recent = searchParams.get("recent");
 
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+    const userId = session.user.id;
     try {
         const query = supabase
             .from("projects")
             .select()
-            .eq("user_id", "5edf1eff-69b2-481a-800f-81860d8b9f4f")
+            .eq("user_id", userId)
             .order("updated_at", { ascending: false });
 
         if (recent === "true") {

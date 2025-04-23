@@ -1,10 +1,10 @@
 import Register from "@/components/auth/Register";
+import Features from "@/components/home/Features";
 import Footer from "@/components/home/Footer";
 import Header from "@/components/home/Header";
 import Hero from "@/components/home/Hero";
 import { useModalState } from "@/context/ModalContext";
 import React, { useEffect } from "react";
-
 export default function HomeModules() {
   const { setModal } = useModalState();
   useEffect(() => {
@@ -21,8 +21,13 @@ export default function HomeModules() {
 
   return (
     <>
+      {/* <!-- Navbar --> */}
       <Header />
+      {/* <!-- Hero Section --> */}
       <Hero />
+      {/* <!-- Features Section --> */}
+      <Features />
+      {/* <!-- Footer --> */}
       <Footer />
       <Register />
     </>
