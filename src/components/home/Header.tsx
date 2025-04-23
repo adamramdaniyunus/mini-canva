@@ -10,14 +10,14 @@ const Header = () => {
   };
   return (
     <header>
-      <div className="flex p-4 shadow-sm justify-around items-center">
-        <h1 className="font-bold text-2xl">
-          Mi<span className="text-blue-500">Va</span>
-        </h1>
-        <div className="flex gap-4">
-          <Button onClick={handleModal}>Get Started</Button>
+      <nav className="flex items-center justify-between px-6 py-4">
+        <h1 className="text-xl font-bold">Miva</h1>
+        <div className="space-x-4 flex items-center">
+          <a href="#features" className="text-gray-700 hover:underline">Features</a>
+          <a href="#" className="text-gray-700 hover:underline">FAQ</a>
+          <Button onClick={handleModal} BG="bg-[#3DB2FF] hover:bg-sky-800">Get Started</Button>
         </div>
-      </div>
+      </nav>
     </header>
   );
 };

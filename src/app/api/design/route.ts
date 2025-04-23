@@ -1,12 +1,20 @@
+import { authOptions } from "@/lib/nexauth";
 import { getFileNameFromUrl, supabase } from "@/lib/supabase";
 import { ElementComponent } from "@/types/Element.type";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
     const { width, height } = await req.json();
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return new Response("Unauthorized", { status: 401 });
+    }  
+    const userId = session.user.id;
+  
     try {
         const { data, error } = await supabase.rpc('create_new_design', {
-            user_id: "5edf1eff-69b2-481a-800f-81860d8b9f4f",
+            user_id: userId,
             width,
             height
         });

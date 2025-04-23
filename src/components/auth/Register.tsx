@@ -11,6 +11,7 @@ const Register = () => {
   const { isOpen, setModal } = useModalState();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [error, setErrorMsg] = useState('')
 
   const closeModal = () => {
     setModal(false);
@@ -35,20 +36,17 @@ const Register = () => {
 
     setLoading(false);
 
-    console.log(result);
-
-    if (result?.error) {
-      alert("Invalid credentials");
-    } else {
+    if(!result?.ok) {
+      setErrorMsg(result?.error || "Login Error")
+    }else {
       router.push("/dashboard");
     }
   };
 
   return (
     <div
-      className={`fixed ${
-        isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-      } inset-0 flex items-center justify-center bg-black/50 transition-all duration-300`}
+      className={`fixed ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        } inset-0 flex items-center justify-center bg-black/50 transition-all duration-300`}
     >
       <div className="bg-white text-black p-6 rounded-lg shadow-lg w-96">
         {/* Header */}
@@ -82,6 +80,7 @@ const Register = () => {
               className="w-full px-3 py-2 rounded-md bg-white border border-gray-700 focus:outline-none"
             />
           </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
           <Button type="submit" disabled={loading}>
             {loading ? "Loading..." : "Sign in"}
           </Button>
