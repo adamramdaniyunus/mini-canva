@@ -22,8 +22,10 @@ const Hero = () => {
             with ease
           </h2>
           <p className="text-gray-600 text-4xl">Create stunning single-page designs effortlessly.</p>
-          <div className="max-w-40">
-            <Button onClick={handleModal} BG="text-xl inline-block bg-[#FF2442] font-medium hover:bg-red-800">Get Started</Button>
+          <div className="max-w-80">
+            <Button onClick={handleModal} BG="text-xl inline-block bg-[#FF2442] font-medium hover:bg-red-800">
+              Login to Start Designing
+            </Button>
           </div>
         </div>
         <div className="md:w-1/2 mt-10 md:mt-0 relative">
