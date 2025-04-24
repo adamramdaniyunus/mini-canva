@@ -1,4 +1,5 @@
 import Register from "@/components/auth/Register";
+import CTA from "@/components/home/CTA";
 import Features from "@/components/home/Features";
 import Footer from "@/components/home/Footer";
 import Header from "@/components/home/Header";
@@ -27,6 +28,8 @@ export default function HomeModules() {
       <Hero />
       {/* <!-- Features Section --> */}
       <Features />
+      {/* CTA */}
+      <CTA />
       {/* <!-- Footer --> */}
       <Footer />
       <Register />
