@@ -657,55 +657,6 @@ export default function DesignModules() {
 
   // auto save 
 
-  // const saveProjectToDB = () => {
-  //   if (!mainframe || !components) return;
-  //   // Debounced function to prevent rapid save calls
-  //   const debouncedSave = debounce(async () => {
-  //     if (hasUnsavedChanges.current) {
-  //       console.log("Saving...");
-  //       // Reset flag after saving
-  //       hasUnsavedChanges.current = false;
-
-  //       const blob = await generatePreviewImage("canvas-design");
-  //       const fileName = `preview-${mainframe.id}.png`;
-  //       const publicUrl = await uploadPreviewImage(blob as Blob, fileName);
-
-  //       if (!publicUrl) console.warn("process generated preview fail");
-
-  //       await fetch('/api/design', {
-  //         method: "PUT",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({ mainFrame: mainframe, components, preview_url: publicUrl }),
-  //       });
-
-  //       // then give notif
-  //       toast.success('All changes saved.', {
-  //         position: 'bottom-center',
-  //         style: {
-  //           padding: '8px',
-  //           color: '#713200',
-  //         },
-  //         iconTheme: {
-  //           primary: '#713200',
-  //           secondary: '#FFFAEE',
-  //         },
-  //       });
-  //     }
-  //   }, 1000);
-
-  //   // Execute the debounced function
-  //   debouncedSave(mainframe as CanvasType, components);
-  // };
-
-  // useEffect(() => {
-  //   const interval = setInterval(saveProjectToDB, 10000);
-
-  //   return () => clearInterval(interval);
-  // }, [hasUnsavedChanges.current]);
-
-
   const handleManualSave = async () => {
     if (mainframe) {
       setIsSaving(true); // Mulai loading
@@ -821,7 +772,7 @@ export default function DesignModules() {
   }, [handleUndo, handleRedo, isTyping])
 
   return (
-    <div className="h-screen flex flex-col relative">
+    <div className="h-screen flex flex-col relative overflow-y-hidden">
       <Header handleExport={handleExport} handleManualSave={handleManualSave} isSaving={isSaving} />
 
       <div className="flex flex-1">
