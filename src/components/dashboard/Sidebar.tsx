@@ -4,10 +4,9 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react'
-import { BiCloset, BiFolder, BiHome, BiMenu } from 'react-icons/bi';
+import { BiFolder, BiHome, BiMenu } from 'react-icons/bi';
 import { BsGear } from 'react-icons/bs';
 import PasswordForm from './PasswordForm';
-import { ArrowRight } from 'lucide-react';
 import { CgClose } from 'react-icons/cg';
 
 const Sidebar = () => {
