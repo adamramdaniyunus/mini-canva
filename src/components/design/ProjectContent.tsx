@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 import React, { useState } from "react";
 import LayoutMenu from "./LayoutMenu";
+import ProjectLists from "../dashboard/ProjectLists";
 
 const ProjectContent = () => {
   const [query, setQuery] = useState("");
@@ -11,6 +12,7 @@ const ProjectContent = () => {
           <Search className="h-4 w-4 text-gray-500 mr-2" />
           <input
             type="text"
+            readOnly
             placeholder="Search Project"
             className="w-full outline-none text-sm placeholder-gray-400"
             value={query}
@@ -19,22 +21,8 @@ const ProjectContent = () => {
         </div>
       </div>
 
-      <div className="overflow-auto h-full space-y-4">
-        <div className="flex flex-wrap gap-4 p-4 w-full">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-white overflow-hidden h-auto w-[120px]">
-              <img
-                src={`https://placehold.co/250x150?text=Image+${i + 1}`}
-                alt={`Thumbnail ${i + 1}`}
-                className="w-full h-auto rounded-md"
-              />
-
-              <p className="font-semibold text-sm truncate w-full">
-                Title {i + 1}
-              </p>
-            </div>
-          ))}
-        </div>
+      <div className="overflow-auto h-full space-y-4 p-4">
+        <ProjectLists />
       </div>
     </LayoutMenu>
   );
