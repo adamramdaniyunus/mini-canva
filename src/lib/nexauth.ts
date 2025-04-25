@@ -22,10 +22,10 @@ export const authOptions: NextAuthOptions = {
         }
 
         const { data: user } = await supabase
-        .from("users")
-        .select("*")
-        .eq("email", credentials.email)
-        .maybeSingle();
+          .from("users")
+          .select("*")
+          .eq("email", credentials.email)
+          .maybeSingle();
 
         // Cek apakah email cocok
         if (!user) {
@@ -47,11 +47,14 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
-        const existingUser = supabase
+        const { data: existingUser } = await supabase
           .from('users')
           .select('*')
           .eq('email', user.email)
           .maybeSingle();
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(user.email || "password", salt);
 
         if (!existingUser) {
           await supabase
@@ -60,10 +63,11 @@ export const authOptions: NextAuthOptions = {
               email: user.email,
               fullname: user.name,
               profile: user.image,
-            })
-            .select("*");
+              password: hashedPassword
+            });
 
-          return true;
+          console.log("asadasd");
+
         }
       }
 

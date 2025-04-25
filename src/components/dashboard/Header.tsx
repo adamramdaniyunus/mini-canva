@@ -4,7 +4,7 @@ import Button from "@/components/Button";
 import { useDesignState } from "@/context/DesignContext";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { createDesign, saveProjects } from "@/lib/indexDB";
 import { CanvasType } from "@/types/CanvasType";
 import toast from "react-hot-toast";
@@ -15,11 +15,18 @@ export default function Header() {
   const imgRef = useRef<HTMLImageElement | null>(null); // ⬅️ Ref untuk img profile
   const router = useRouter();
   const { setState, setLoading, isLoading } = useDesignState();
-
+  const session = useSession();
+  const user = session.data?.user;
+  
   const handleCreateNewDesign = async () => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      router.push('/mobile-not-supported');
+      return
+    }
     setLoading(true);
     setState({ width: 400, height: 400 });
-    let promise: {data: {project_id: string, frame_id:string}} = {data:{project_id: "", frame_id: ""}};
+    let promise: { data: { project_id: string, frame_id: string } } = { data: { project_id: "", frame_id: "" } };
 
     // Call API to create new design
     try {
@@ -39,7 +46,7 @@ export default function Header() {
     }
 
     const newDesignId = promise.data.project_id; // Use the project_id from the response
-    const initialComponents: CanvasType ={
+    const initialComponents: CanvasType = {
       id: promise.data.frame_id,
       height: 400,
       width: 500,
@@ -86,7 +93,7 @@ export default function Header() {
     <header>
       <div className="flex p-4 px-10 justify-between items-center shadow-sm">
         <h1 className="font-bold text-2xl">
-          Mi<span className="text-blue-500">Va</span>
+          Miva
         </h1>
         <div className="flex gap-4 items-center relative">
           <Button disabled={isLoading} onClick={handleCreateNewDesign}>
@@ -95,8 +102,8 @@ export default function Header() {
           <img
             ref={imgRef} // ⬅️ Tambahkan ref ke img
             onClick={handleShowMenu}
-            src="https://as2.ftcdn.net/v2/jpg/03/64/21/11/1000_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-            alt=""
+            src={user?.profile || "https://as2.ftcdn.net/v2/jpg/03/64/21/11/1000_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"}
+            alt="profile"
             className="w-10 h-10 rounded-full object-cover cursor-pointer active:opacity-80 transition-all duration-300"
           />
 
