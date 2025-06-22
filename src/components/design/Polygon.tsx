@@ -1,6 +1,7 @@
 import { ElementComponent } from '@/types/Element.type';
 import React, { RefObject } from 'react'
 import ResizeButton from './ResizeButton';
+import { previewScale } from '@/utils/scale';
 
 const Polygon = ({
     component,
@@ -11,6 +12,7 @@ const Polygon = ({
     handleRotate,
     isRotating,
     rotate,
+    isPreview
 }: {
     component: ElementComponent,
     handleClickElement: (element: ElementComponent) => void,
@@ -20,21 +22,25 @@ const Polygon = ({
     handleRotate: (e: React.MouseEvent) => void;
     isRotating: RefObject<boolean>;
     rotate: number;
+    isPreview?:boolean;
 }) => {
 
     return (
         <div
             onMouseDown={(e) => handleMouseDown(e, component)}
-            onClick={() => handleClickElement(component)}
+            onClick={() => {
+                if(isPreview) return;
+                handleClickElement(component)
+            }}
             id={`element-${component.id}`}
             key={component.id}
             className={`absolute group hover:border-[2px] hover:border-indigo-400 ${isSelected ? 'border-[2px] border-indigo-500' : ''}`}
             style={{
-                width: component.width + "px",
-                height: component.height + "px",
+                width: isPreview ? component.width * previewScale : component.width + "px",
+                height: isPreview ? component.height * previewScale : component.height + "px",
                 zIndex: component.z_index,
-                top: component.top,
-                left: component.left,
+                top: isPreview ? component.top! * previewScale : component.top,
+                left: isPreview ? component.left! * previewScale : component.left,
                 transform: `rotate(${component.rotation || 0}deg)`,
                 transformOrigin: 'center',
             }}
@@ -53,7 +59,7 @@ const Polygon = ({
                     Math.floor(rotate)}
             </p>}
             {/* Resize Handles */}
-            {isSelected && <ResizeButton handleResize={handleResize} handleRotate={handleRotate} />}
+            {!isPreview && isSelected && <ResizeButton handleResize={handleResize} handleRotate={handleRotate} />}
         </div>
     )
 }

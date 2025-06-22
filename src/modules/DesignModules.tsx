@@ -271,10 +271,48 @@ export default function DesignModules() {
 
   const updateElementPosition = (id: number, newTop: number, newLeft: number) => {
     const movingElement = components.find((c) => c.id === id);
-    if (!movingElement) return;
+    if (!movingElement || !mainframe) return;
+
+    // Information for width and height canvas
+    const containerWidth = mainframe.width;
+    const containerHeight = mainframe.height;
 
     let snappedTop = newTop;
     let snappedLeft = newLeft;
+
+    /**
+     * logic for auto snapping on canvas
+     * when user drag element to top or side canvas element will snapping
+     */
+    if (Math.abs(newTop) < SNAP_THRESHOLD) {
+      snappedTop = 0;
+    }
+
+    if (Math.abs(newLeft) < SNAP_THRESHOLD) {
+      snappedLeft = 0;
+    }
+
+    const movingRight = newLeft + movingElement.width;
+    if (Math.abs(containerWidth - movingRight) < SNAP_THRESHOLD) {
+      snappedLeft = containerWidth - movingElement.width;
+    }
+
+    const movingBottom = newTop + movingElement.height;
+    if (Math.abs(containerHeight - movingBottom) < SNAP_THRESHOLD) {
+      snappedTop = containerHeight - movingElement.height;
+    }
+
+    const movingCenterX = newLeft + movingElement.width / 2;
+    const containerCenterX = containerWidth / 2;
+    if (Math.abs(movingCenterX - containerCenterX) < SNAP_THRESHOLD) {
+      snappedLeft = containerCenterX - movingElement.width / 2;
+    }
+
+    const movingCenterY = newTop + movingElement.height / 2;
+    const containerCenterY = containerHeight / 2;
+    if (Math.abs(movingCenterY - containerCenterY) < SNAP_THRESHOLD) {
+      snappedTop = containerCenterY - movingElement.height / 2;
+    }
 
     // snapping feature
     components.forEach((other) => {
@@ -535,7 +573,7 @@ export default function DesignModules() {
     } catch (error) {
       console.log(error);
       toast.error("Failed to download design")
-    }finally {
+    } finally {
       setIsSaving(false);
     }
   };
@@ -580,7 +618,7 @@ export default function DesignModules() {
   }, [components, designId]);
 
   useEffect(() => {
-    const saveCanvasThrottle = debounce(() => {
+    const saveCanvasThrottle = debounce(async () => {
       if (mainframe) {
         saveCanvas(designId as string, mainframe as CanvasType);
       }
@@ -590,6 +628,23 @@ export default function DesignModules() {
       saveCanvasThrottle();
     }
   }, [mainframe, designId]);
+
+  // useEffect(() => {
+  //   if (mainframe) {
+  //     const generatePreviewThumbnail = async () => {
+  //       const blob = await generatePreviewImage("canvas-design");
+  //       const fileName = `preview-${mainframe.id}.png`;
+  //       const publicUrl = await uploadPreviewImage(blob as Blob, fileName);
+  //       if (!publicUrl) console.warn("process generated preview fail");
+  //       setMainFrame((prev) => {
+  //         if (!prev) return null;
+  //         return { ...prev, preview_url: publicUrl || "" };
+  //       });
+  //     }
+
+  //     generatePreviewThumbnail()
+  //   }
+  // }, [mainframe, components])
 
 
 
@@ -689,13 +744,6 @@ export default function DesignModules() {
     debounce(async (mainframe: CanvasType, components: ElementComponent[]) => {
       if (!mainframe || !components || isTyping) return;
 
-      console.log("Saving...");
-      // const blob = await generatePreviewImage("canvas-design");
-      // const fileName = `preview-${mainframe.id}.png`;
-      // const publicUrl = await uploadPreviewImage(blob as Blob, fileName);
-
-      // if (!publicUrl) console.warn("process generated preview fail");
-
       await fetch('/api/design', {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -787,7 +835,7 @@ export default function DesignModules() {
         {/* Main Content */}
         <div className="flex-1 flex flex-col p-4">
           {/* Canvas Area */}
-          <div className="flex-1 flex justify-center items-center rounded-lg p-4">
+          <div className="flex-1 flex flex-col gap-20 justify-center items-center rounded-lg p-4">
             <div className={`relative h-auto shadow-lg ${isLoadDesign && 'blur-[5px] pointer-events-none transition-all duration-300 ease-in'}`} ref={canvasWrapperRef}>
               {showColorPicker && (
                 <ColorPicker
@@ -830,6 +878,24 @@ export default function DesignModules() {
                 />
               )}
             </div>
+
+            <Canvas
+              setDrawerPosition={setDrawerPosition}
+              drawerPosition={drawerPosition}
+              components={components}
+              updateElementPosition={updateElementPosition}
+              handleClickElement={handleClickElement}
+              selectedElement={selectedElement}
+              updateElementSize={updateElementSize}
+              updateElementRotation={updateElementRotation}
+              updateTextValue={updateTextValue}
+              addImage={addImage}
+              newImageId={newImageId}
+              mainFrame={mainframe}
+              handleIsTyping={handleIsTyping}
+              handleChange={handleChange}
+              isPreview={true}
+            />
 
             {isSaving && (
               <div className="z-[99999] rounded-md bg-white p-4 shadow-md absolute h-[100px] w-[300px] bottom-10 right-10 flex flex-col items-center justify-center gap-3">

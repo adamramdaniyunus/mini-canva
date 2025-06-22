@@ -1,6 +1,7 @@
 import { ElementComponent } from '@/types/Element.type';
 import React, { RefObject, useEffect, useRef, useState } from 'react'
 import ResizeButton from './ResizeButton';
+import { previewScale } from '@/utils/scale';
 
 const Text = ({
     component,
@@ -13,6 +14,7 @@ const Text = ({
     rotate,
     updateTextValue,
     handleIsTyping,
+    isPreview
 }: {
     component: ElementComponent,
     handleClickElement: (element: ElementComponent) => void,
@@ -24,6 +26,7 @@ const Text = ({
     rotate: number;
     updateTextValue: (id: number, value: string) => void;
     handleIsTyping: () => void;
+    isPreview?:boolean;
 }) => {
     const isGradient = component.color?.includes("linear-gradient");
     const [isEditing, setIsEditing] = useState(false);
@@ -44,7 +47,10 @@ const Text = ({
             onMouseDown={(e) => {
                 if (!isEditing) handleMouseDown(e, component);
             }}
-            onClick={() => handleClickElement(component)}
+            onClick={() => {
+                if(isPreview) return;
+                handleClickElement(component)
+            }}
             onDoubleClick={() => {
                 setIsEditing(true)
                 handleIsTyping()
@@ -53,14 +59,15 @@ const Text = ({
             id={`element-${component.id}`}
             className={`absolute flex items-center cursor-pointer ${isSelected ? 'border-2 border-indigo-500' : ''}`}
             style={{
-                top: component.top,
-                left: component.left,
-                width: component.width,
+                width: isPreview ? component.width * previewScale : component.width + "px",
+                // height: isPreview ? component.height * previewScale : component.height + "px",
+                zIndex: component.z_index,
+                top: isPreview ? component.top! * previewScale : component.top,
+                left: isPreview ? component.left! * previewScale : component.left,
                 height: "auto",
                 transform: `rotate(${rotate}deg)`,
-                zIndex: component.z_index,
                 fontFamily: component.font_family,
-                fontSize: component.font_size,
+                fontSize: isPreview ? component.font_size! * previewScale : component.font_size,
                 backgroundImage: isGradient ? component.color : undefined,
                 WebkitBackgroundClip: isGradient ? "text" : undefined,
                 WebkitTextFillColor: isGradient ? "transparent" : undefined,
@@ -120,7 +127,7 @@ const Text = ({
                 </p>
             )}
             {/* Resize Handles */}
-            {isSelected && <ResizeButton handleResize={handleResize} handleRotate={handleRotate} />}
+            {!isPreview && isSelected && <ResizeButton handleResize={handleResize} handleRotate={handleRotate} />}
         </div>
     );
 }

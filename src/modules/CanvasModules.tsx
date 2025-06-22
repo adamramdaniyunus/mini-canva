@@ -10,6 +10,7 @@ import { saveImageBlob } from "@/lib/indexDB";
 import { CanvasType } from "@/types/CanvasType";
 import Text from "@/components/design/Text";
 import { uploadToSupabase } from "@/lib/supabase";
+import { previewScale } from "@/utils/scale";
 
 const THROTTLE_INTERVAL = 16; // 60 FPS
 
@@ -28,7 +29,8 @@ const Canvas = ({
   updateTextValue,
   handleIsTyping,
   handleChange,
-  canvasRef
+  canvasRef,
+  isPreview
 }: {
   components: ElementComponent[],
   handleClickElement: (element: ElementComponent | CanvasType | null) => void;
@@ -50,7 +52,8 @@ const Canvas = ({
   updateTextValue: (id: number, text: string) => void;
   handleIsTyping: () => void;
   handleChange: () => void;
-  canvasRef: RefObject<HTMLDivElement | null>;
+  canvasRef?: RefObject<HTMLDivElement | null>;
+  isPreview?:boolean;
 }) => {
   // const mainFrame = components.find((c) => c.name === "main_frame");
   const otherComponents = components.filter((c) => c.name !== "main_frame");
@@ -59,6 +62,7 @@ const Canvas = ({
   const isDragging = useRef(false);
   const isRotating = useRef(false);
   const isLoading = !mainFrame;
+  const scala = isPreview ? previewScale : 1;
 
   // Function to handle mouse down event for dragging the element
   // This function is called when the user clicks on the element
@@ -67,6 +71,7 @@ const Canvas = ({
   const handleMouseDown = (e: React.MouseEvent, component: ElementComponent) => {
     // if (!selectedElement) return
     e.stopPropagation();
+    if(isPreview) return
     handleClickElement(component);
 
     const startX = e.clientX;
@@ -86,7 +91,7 @@ const Canvas = ({
       const newLeft = moveEvent.clientX - dragOffset.current.x;
       const newTop = moveEvent.clientY - dragOffset.current.y;
 
-      const parentRect = canvasRef.current?.getBoundingClientRect();
+      const parentRect = canvasRef?.current?.getBoundingClientRect();
       const relativeLeft = newLeft - (parentRect?.left || 0);
       const relativeTop = newTop - (parentRect?.top || 0);
 
@@ -112,7 +117,7 @@ const Canvas = ({
   // It calculates the new width and height based on the mouse movement
   // and updates the element's size accordingly
   const handleResize = (e: React.MouseEvent, direction: string) => {
-    if (!selectedElement) return
+    if (!selectedElement || isPreview) return
     e.stopPropagation();
     e.preventDefault();
 
@@ -176,6 +181,7 @@ const Canvas = ({
   // It calculates the new angle based on the mouse movement
   // and updates the element's rotation accordingly
   const handleRotate = (e: React.MouseEvent) => {
+    if(isPreview) return
     e.preventDefault();
     e.stopPropagation();
     if (!selectedElement) return;
@@ -236,6 +242,7 @@ const Canvas = ({
   // This function is called when the user drops an image onto the canvas
 
   const loadImage = (src: string, dropX: number, dropY: number) => {
+    if(isPreview) return
     const img = new Image();
     img.src = src;
 
@@ -255,10 +262,15 @@ const Canvas = ({
         newHeight = height * ratio;
       }
 
+      // on this calculation is for handling element always following cursor
+      // when user drag n drop
+      const finalLeft = dropX - (newWidth / 2);
+      const finalTop = dropY - (newHeight / 2);
+
       addImage({
         blobUrl: src,
-        clientX: dropX,
-        clientY: dropY,
+        clientX: finalLeft,
+        clientY: finalTop,
         newWidth,
         newHeight,
       });
@@ -267,6 +279,7 @@ const Canvas = ({
 
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
+    if(!canvasRef || isPreview) return;
 
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     const dropX = e.clientX - (canvasRect?.left ?? 0);
@@ -303,8 +316,8 @@ const Canvas = ({
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
           style={{
-            width: mainFrame ? mainFrame.width : 500,
-            height: mainFrame ? mainFrame.height : 400,
+            width: mainFrame ? isPreview ? mainFrame.width * scala : mainFrame.width : 500 * scala,
+            height: mainFrame ? isPreview ? mainFrame.height * scala :  mainFrame.height : 400 * scala,
             background: mainFrame ? mainFrame.background_color : "#DBDBDB",
             zIndex: 1,
             userSelect: 'none'
@@ -335,6 +348,7 @@ const Canvas = ({
                 handleRotate={handleRotate}
                 isRotating={isRotating}
                 rotate={rotate}
+                isPreview={isPreview}
               />
             }
 
@@ -349,6 +363,7 @@ const Canvas = ({
                 handleRotate={handleRotate}
                 isRotating={isRotating}
                 rotate={rotate}
+                isPreview={isPreview}
               />
             }
 
@@ -363,6 +378,7 @@ const Canvas = ({
                 handleRotate={handleRotate}
                 isRotating={isRotating}
                 rotate={rotate}
+                isPreview={isPreview}
               />
             }
 
@@ -378,6 +394,7 @@ const Canvas = ({
                   handleRotate={handleRotate}
                   isRotating={isRotating}
                   rotate={rotate}
+                  isPreview={isPreview}
                 />
               )
             }
@@ -395,6 +412,7 @@ const Canvas = ({
                 rotate={rotate}
                 updateTextValue={updateTextValue}
                 handleIsTyping={handleIsTyping}
+                isPreview={isPreview}
               />
             }
 

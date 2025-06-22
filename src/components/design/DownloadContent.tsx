@@ -60,14 +60,14 @@ const DownloadComponent = ({ addImage }: {
   }) => void;
 }) => {
   const [layout, setLayout] = useState<
-    { url: string; width: number; span: string; height: number; isTemp?: boolean; id?:string }[][]
+    { url: string; width: number; span: string; height: number; isTemp?: boolean; id?: string }[][]
   >([]);
 
   const [isUploading, setUploading] = useState(false);
   const [isLoading, setLoading] = useState(false);
 
   const [images, setImages] = useState<
-    { url: string; width: number; height: number; isTemp: boolean; id?:string }[]
+    { url: string; width: number; height: number; isTemp: boolean; id?: string }[]
   >([]);
 
   const updateLayoutFromImages = (imageList: typeof images, blobUrl?: string) => {
@@ -101,7 +101,7 @@ const DownloadComponent = ({ addImage }: {
         const responseJSON = await fetch("/api/design/upload");
         const response = await responseJSON.json();
 
-        const imageList = response.data.map((img: { width: number; height: number; url: string; id:string }) => ({
+        const imageList = response.data.map((img: { width: number; height: number; url: string; id: string }) => ({
           ...img,
           isTemp: false,
         }));
@@ -156,7 +156,7 @@ const DownloadComponent = ({ addImage }: {
 
         const newDataJSON = await newData.json();
         const data = newDataJSON.data
-  
+
         // Hapus temp dan tambahkan final image
         const updatedImages = [
           ...images.filter((img) => img.url !== blobUrl),
@@ -173,7 +173,7 @@ const DownloadComponent = ({ addImage }: {
     }
   };
 
-  const handleDeleteImage = async(url:string, id:string) => {
+  const handleDeleteImage = async (url: string, id: string) => {
     try {
       const imageDeleted = images.filter((img) => img.id !== id);
       const grouped = groupImages(
@@ -235,12 +235,25 @@ const DownloadComponent = ({ addImage }: {
                   src={img.url}
                   onClick={() => {
                     if (img.isTemp) return;
+                    const width = img.width;
+                    const height = img.height;
+                    const maxWidth = 300;
+                    const maxHeight = 300;
+
+                    let newWidth = width;
+                    let newHeight = height;
+
+                    if (width > maxWidth || height > maxHeight) {
+                      const ratio = Math.min(maxWidth / width, maxHeight / height);
+                      newWidth = width * ratio;
+                      newHeight = height * ratio;
+                    }
                     addImage!({
                       blobUrl: img.url,
                       clientX: 10,
                       clientY: 10,
-                      newHeight: img.height / 2,
-                      newWidth: img.width / 2
+                      newHeight: newHeight,
+                      newWidth: newWidth
                     })
                   }}
                   className={`w-full h-[100px] rounded-md object-cover cursor-pointer`}
@@ -248,7 +261,7 @@ const DownloadComponent = ({ addImage }: {
                 />
 
                 <button onClick={() => handleDeleteImage(img.url, img.id || "")} className="absolute text-xs p-1 top-1 right-1 cursor-pointer bg-white rounded-sm hover:bg-gray-300">
-                  <FaTrash/>
+                  <FaTrash />
                 </button>
 
                 {img.isTemp && (
