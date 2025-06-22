@@ -54,6 +54,7 @@ export default function Header() {
       background_image: "",
       components: [],
       project_id: newDesignId,
+      preview_url: ""
     };
 
     await createDesign(newDesignId, initialComponents);

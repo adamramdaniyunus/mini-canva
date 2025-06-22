@@ -61,7 +61,7 @@ const FeaturePanel = ({
     )
   }
   return (
-    <div className="absolute rounded-md shadow-md p-4 space-y-4 -top-20 bg-white z-50">
+    <div className="absolute rounded-md shadow-md p-4 space-y-4 -top-20 bg-white z-10">
       <div className="flex gap-4 items-center relative">
         {/* Color Picker */}
         <button

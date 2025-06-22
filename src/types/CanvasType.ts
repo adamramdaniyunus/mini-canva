@@ -8,4 +8,5 @@ export type CanvasType = {
     components: ElementComponent[];
     background_color: string;
     background_image: string;
+    preview_url:string;
 }
