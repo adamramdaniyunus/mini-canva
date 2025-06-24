@@ -20,7 +20,7 @@ interface SidebarComponentProps {
     newHeight: number;
     blobUrl: string;
   }) => void;
-  handleChangeBackground? : (url:string) => void;
+  handleChangeBackground?: (url: string) => void;
 }
 
 const loader = () => (
@@ -112,52 +112,103 @@ const LeftSidebar = ({ createShapes, addImage, addText, handleChangeBackground }
   const ComponentToRender = components[state] || components["shape"];
 
   return (
-    <main className="md:relative absolute md:left-0 left-[-400px]">
-      <aside className="w-20 bg-white relative shadow-md flex z-50 flex-col items-center py-4 space-y-6 h-full">
-        {items.map((item, i) => (
-          <button
-            onClick={() => handleShowFeature(item.state)}
-            key={i}
-            className={`relative w-full hover:opacity-50 cursor-pointer items-center p-4 h-auto flex flex-col rounded-lg transition-all duration-300 ${state === item.state && "text-white"
-              }`}
-          >
-            {/* Animasi Indicator */}
-            {state === item.state && (
-              <motion.div
-                layoutId="activeButton"
-                className="absolute inset-0 bg-blue-500 rounded-lg"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2 }}
-              />
-            )}
+    <>
+      <main className="md:relative absolute md:left-0 left-[-400px]">
+        <aside className="md:w-20 bg-white relative shadow-md flex z-50 flex-col items-center py-4 space-y-6 h-full">
+          {items.map((item, i) => (
+            <button
+              onClick={() => handleShowFeature(item.state)}
+              key={i}
+              className={`relative w-full hover:opacity-50 cursor-pointer items-center p-4 h-auto flex flex-col rounded-lg transition-all duration-300 ${state === item.state && "text-white"
+                }`}
+            >
+              {/* Animasi Indicator */}
+              {state === item.state && (
+                <motion.div
+                  layoutId="activeButton"
+                  className="absolute inset-0 bg-blue-500 rounded-lg"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                />
+              )}
 
-            <span className="relative z-10">{item.icon}</span>
-            <p className="relative z-10 text-xs">{item.text}</p>
-          </button>
-        ))}
-      </aside>
-      <div
-        className={`bg-white shadow-md w-72 absolute  h-full top-0 transition-all ease-in-out duration-500 z-30 ${isOpen ? "left-20" : "-left-[205px] -z-1"
-          }`}
-      >
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="absolute -right-[10px] top-1/2 transform -translate-y-1/2 bg-gray-100 active:scale-90 transition-all duration-300 h-20 rounded-r-lg"
+              <span className="relative z-10">{item.icon}</span>
+              <p className="relative z-10 text-xs">{item.text}</p>
+            </button>
+          ))}
+        </aside>
+        <div
+          className={`bg-white shadow-md w-72 absolute  h-full top-0 transition-all ease-in-out duration-500 z-30 ${isOpen ? "left-20" : "-left-[205px] -z-1"
+            }`}
         >
-          <IoIosArrowBack
-            className={`${isOpen ? "rotate-0" : "rotate-180"
-              } transition-all duration-700`}
-          />
-        </button>
-        {ComponentToRender && <ComponentToRender
-          createShapes={createShapes}
-          addImage={addImage}
-          addText={addText}
-          handleChangeBackground={handleChangeBackground}
-        />}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="absolute -right-[10px] top-1/2 transform -translate-y-1/2 bg-gray-100 active:scale-90 transition-all duration-300 h-20 rounded-r-lg"
+          >
+            <IoIosArrowBack
+              className={`${isOpen ? "rotate-0" : "rotate-180"
+                } transition-all duration-700`}
+            />
+          </button>
+          {ComponentToRender && <ComponentToRender
+            createShapes={createShapes}
+            addImage={addImage}
+            addText={addText}
+            handleChangeBackground={handleChangeBackground}
+          />}
+        </div>
+      </main>
+
+      <div className="relative">
+        <main className="fixed bottom-0 overflow-x-auto">
+          <aside className="w-full bg-white relative shadow-md overflow-x-auto flex z-50 items-center py-4 space-y-6 h-full">
+            {items.map((item, i) => (
+              <button
+                onClick={() => handleShowFeature(item.state)}
+                key={i}
+                className={`relative w-full hover:opacity-50 cursor-pointer items-center p-4 h-auto flex flex-col rounded-lg transition-all duration-300 ${state === item.state && "text-white"
+                  }`}
+              >
+                {/* Animasi Indicator */}
+                {state === item.state && (
+                  <motion.div
+                    layoutId="activeButton"
+                    className="absolute inset-0 bg-blue-500 rounded-lg"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                )}
+
+                <span className="relative z-10">{item.icon}</span>
+                <p className="relative z-10 text-xs">{item.text}</p>
+              </button>
+            ))}
+          </aside>
+        </main>
+        <div
+          className={`bg-white shadow-md w-72 absolute  h-full top-0 transition-all ease-in-out duration-500 z-30 ${isOpen ? "left-0" : "-left-[405px] -z-1"
+            }`}
+        >
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="absolute -right-[10px] top-1/2 transform -translate-y-1/2 bg-gray-100 active:scale-90 transition-all duration-300 h-20 rounded-r-lg"
+          >
+            <IoIosArrowBack
+              className={`${isOpen ? "rotate-0" : "rotate-180"
+                } transition-all duration-700`}
+            />
+          </button>
+          {ComponentToRender && <ComponentToRender
+            createShapes={createShapes}
+            addImage={addImage}
+            addText={addText}
+            handleChangeBackground={handleChangeBackground}
+          />}
+        </div>
       </div>
-    </main>
+    </>
   );
 };
 

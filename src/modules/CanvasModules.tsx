@@ -339,8 +339,8 @@ const Canvas = ({
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
           style={{
-            width: mainFrame ? isPreview ? mainFrame.width * scala : mainFrame.width * scala : 500 * scala,
-            height: mainFrame ? isPreview ? mainFrame.height * scala : mainFrame.height * scala : 400 * scala,
+            width: mainFrame ? mainFrame.width * scala : 500 * scala,
+            height: mainFrame ? mainFrame.height * scala : 400 * scala,
             background: mainFrame ? mainFrame.background_color : "#DBDBDB",
             zIndex: 1,
             userSelect: 'none'
