@@ -1,7 +1,6 @@
 import { ElementComponent } from '@/types/Element.type';
 import React, { RefObject, useEffect, useRef, useState } from 'react'
 import ResizeButton from './ResizeButton';
-import { previewScale } from '@/utils/scale';
 
 const Text = ({
     component,
