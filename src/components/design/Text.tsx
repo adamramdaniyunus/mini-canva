@@ -19,7 +19,7 @@ const Text = ({
     component: ElementComponent,
     handleClickElement: (element: ElementComponent) => void,
     isSelected: boolean,
-    handleMouseDown: (e: React.MouseEvent, component: ElementComponent) => void;
+    handleMouseDown: (e: React.MouseEvent | React.TouchEvent, component: ElementComponent) => void;
     handleResize: (e: React.MouseEvent, direction: string) => void;
     handleRotate: (e: React.MouseEvent) => void;
     isRotating: RefObject<boolean>;
@@ -46,6 +46,9 @@ const Text = ({
     return (
         <div
             onMouseDown={(e) => {
+                if (!isEditing) handleMouseDown(e, component);
+            }}
+            onTouchStart={(e) => {
                 if (!isEditing) handleMouseDown(e, component);
             }}
             onClick={() => {

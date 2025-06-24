@@ -17,7 +17,7 @@ const Polygon = ({
     component: ElementComponent,
     handleClickElement: (element: ElementComponent) => void,
     isSelected: boolean,
-    handleMouseDown: (e: React.MouseEvent, component: ElementComponent) => void;
+    handleMouseDown: (e: React.MouseEvent | React.TouchEvent, component: ElementComponent) => void;
     handleResize: (e: React.MouseEvent, direction: string) => void;
     handleRotate: (e: React.MouseEvent) => void;
     isRotating: RefObject<boolean>;
@@ -29,6 +29,7 @@ const Polygon = ({
     return (
         <div
             onMouseDown={(e) => handleMouseDown(e, component)}
+            onTouchStart={(e) => handleMouseDown(e, component)}
             onClick={() => {
                 if(isPreview) return;
                 handleClickElement(component)
