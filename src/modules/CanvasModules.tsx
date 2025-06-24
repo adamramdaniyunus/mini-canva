@@ -30,7 +30,8 @@ const Canvas = ({
   handleIsTyping,
   handleChange,
   canvasRef,
-  isPreview
+  isPreview,
+  isMobile
 }: {
   components: ElementComponent[],
   handleClickElement: (element: ElementComponent | CanvasType | null) => void;
@@ -53,7 +54,8 @@ const Canvas = ({
   handleIsTyping: () => void;
   handleChange: () => void;
   canvasRef?: RefObject<HTMLDivElement | null>;
-  isPreview?:boolean;
+  isPreview?: boolean;
+  isMobile?:boolean;
 }) => {
   // const mainFrame = components.find((c) => c.name === "main_frame");
   const otherComponents = components.filter((c) => c.name !== "main_frame");
@@ -62,22 +64,28 @@ const Canvas = ({
   const isDragging = useRef(false);
   const isRotating = useRef(false);
   const isLoading = !mainFrame;
-  const scala = isPreview ? previewScale : 1;
+  const scala = isPreview ? previewScale : isMobile ? 0.4  : 1;
 
   // Function to handle mouse down event for dragging the element
   // This function is called when the user clicks on the element
   // It calculates the offset between the mouse position and the element's position
   // and sets up event listeners for mouse move and mouse up events
-  const handleMouseDown = (e: React.MouseEvent, component: ElementComponent) => {
-    // if (!selectedElement) return
+  const handleMouseDown = (e: React.MouseEvent | React.TouchEvent, component: ElementComponent) => {
     e.stopPropagation();
-    if(isPreview) return
+    if (isPreview) return;
     handleClickElement(component);
 
-    const startX = e.clientX;
-    const startY = e.clientY;
+    // Helper untuk mendapatkan koordinat dari mouse atau sentuhan
+    const getClientCoords = (e: MouseEvent | TouchEvent) => {
+      if ("touches" in e) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      return { x: e.clientX, y: e.clientY };
+    };
 
-    const elementRect = e.currentTarget.getBoundingClientRect();
+    const { x: startX, y: startY } = getClientCoords(e.nativeEvent);
+
+    const elementRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     dragOffset.current = {
       x: startX - elementRect.left,
       y: startY - elementRect.top,
@@ -85,31 +93,46 @@ const Canvas = ({
 
     isDragging.current = true;
 
-    const handleMouseMove = throttle((moveEvent: MouseEvent) => {
+    const handleInteractionMove = throttle((moveEvent: MouseEvent | TouchEvent) => {
       if (!isDragging.current) return;
 
-      const newLeft = moveEvent.clientX - dragOffset.current.x;
-      const newTop = moveEvent.clientY - dragOffset.current.y;
+      // Mencegah scroll saat drag di mobile
+      if (moveEvent.type === 'touchmove') {
+        moveEvent.preventDefault();
+      }
+
+      const { x: moveX, y: moveY } = getClientCoords(moveEvent);
+
+      const newLeft = moveX - dragOffset.current.x;
+      const newTop = moveY - dragOffset.current.y;
 
       const parentRect = canvasRef?.current?.getBoundingClientRect();
       const relativeLeft = newLeft - (parentRect?.left || 0);
       const relativeTop = newTop - (parentRect?.top || 0);
 
-      updateElementPosition(component.id, relativeTop, relativeLeft);
-      setDrawerPosition({ top: relativeTop, left: relativeLeft });
+      updateElementPosition(component.id, relativeTop / scala, relativeLeft / scala);
+      setDrawerPosition({ top: relativeTop / scala, left: relativeLeft / scala});
     }, THROTTLE_INTERVAL);
 
 
-    const handleMouseUp = () => {
-      handleChange();
+    const handleInteractionEnd = () => {
+      if (isDragging.current) {
+        handleChange();
+      }
       isDragging.current = false;
       setDrawerPosition({ top: null, left: null }); // Clear drawer lines
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+
+      document.removeEventListener("mousemove", handleInteractionMove);
+      document.removeEventListener("mouseup", handleInteractionEnd);
+      document.removeEventListener("touchmove", handleInteractionMove);
+      document.removeEventListener("touchend", handleInteractionEnd);
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousemove", handleInteractionMove);
+    document.addEventListener("touchmove", handleInteractionMove, { passive: false }); 
+
+    document.addEventListener("mouseup", handleInteractionEnd);
+    document.addEventListener("touchend", handleInteractionEnd);
   };
 
   // Function to handle resizing the element
@@ -181,7 +204,7 @@ const Canvas = ({
   // It calculates the new angle based on the mouse movement
   // and updates the element's rotation accordingly
   const handleRotate = (e: React.MouseEvent) => {
-    if(isPreview) return
+    if (isPreview) return
     e.preventDefault();
     e.stopPropagation();
     if (!selectedElement) return;
@@ -242,7 +265,7 @@ const Canvas = ({
   // This function is called when the user drops an image onto the canvas
 
   const loadImage = (src: string, dropX: number, dropY: number) => {
-    if(isPreview) return
+    if (isPreview) return
     const img = new Image();
     img.src = src;
 
@@ -279,7 +302,7 @@ const Canvas = ({
 
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
-    if(!canvasRef || isPreview) return;
+    if (!canvasRef || isPreview) return;
 
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     const dropX = e.clientX - (canvasRect?.left ?? 0);
@@ -316,8 +339,8 @@ const Canvas = ({
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
           style={{
-            width: mainFrame ? isPreview ? mainFrame.width * scala : mainFrame.width : 500 * scala,
-            height: mainFrame ? isPreview ? mainFrame.height * scala :  mainFrame.height : 400 * scala,
+            width: mainFrame ? mainFrame.width * scala : 500 * scala,
+            height: mainFrame ? mainFrame.height * scala : 400 * scala,
             background: mainFrame ? mainFrame.background_color : "#DBDBDB",
             zIndex: 1,
             userSelect: 'none'
@@ -349,6 +372,7 @@ const Canvas = ({
                 isRotating={isRotating}
                 rotate={rotate}
                 isPreview={isPreview}
+                scala={scala}
               />
             }
 
@@ -364,6 +388,7 @@ const Canvas = ({
                 isRotating={isRotating}
                 rotate={rotate}
                 isPreview={isPreview}
+                scala={scala}
               />
             }
 
@@ -379,6 +404,7 @@ const Canvas = ({
                 isRotating={isRotating}
                 rotate={rotate}
                 isPreview={isPreview}
+                scala={scala}
               />
             }
 
@@ -395,6 +421,7 @@ const Canvas = ({
                   isRotating={isRotating}
                   rotate={rotate}
                   isPreview={isPreview}
+                  scala={scala}
                 />
               )
             }
@@ -413,6 +440,7 @@ const Canvas = ({
                 updateTextValue={updateTextValue}
                 handleIsTyping={handleIsTyping}
                 isPreview={isPreview}
+                scala={scala}
               />
             }
 
@@ -423,7 +451,7 @@ const Canvas = ({
               <div
                 className="absolute left-0 w-full h-[1px] pointer-events-none"
                 style={{
-                  top: drawerPosition.top,
+                  top: drawerPosition.top * scala,
                   backgroundImage: 'repeating-linear-gradient(to right, #6366f1 0 4px, transparent 4px 10px)',
                 }}
               />
@@ -434,7 +462,7 @@ const Canvas = ({
               <div
                 className="absolute top-0 h-full w-[1px] pointer-events-none"
                 style={{
-                  left: drawerPosition.left,
+                  left: drawerPosition.left * scala,
                   backgroundImage: 'repeating-linear-gradient(to bottom, #6366f1 0 4px, transparent 4px 10px)',
                 }}
               />

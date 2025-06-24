@@ -228,7 +228,7 @@ const DownloadComponent = ({ addImage }: {
           </div>
         )}
         {layout.map((group, index) => (
-          <div key={index} className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div key={index} className="grid grid-cols-4 gap-2">
             {group.map((img, i) => (
               <div key={i} className={`${img.span} relative`} draggable={!img.isTemp}>
                 <img

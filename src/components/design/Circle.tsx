@@ -1,7 +1,6 @@
 import { ElementComponent } from '@/types/Element.type';
 import React, { RefObject } from 'react'
 import ResizeButton from './ResizeButton';
-import { previewScale } from '@/utils/scale';
 
 const Circle = ({
     component,
@@ -12,22 +11,25 @@ const Circle = ({
     handleRotate,
     isRotating,
     rotate,
-    isPreview
+    isPreview,
+    scala
 }: {
     component: ElementComponent,
     handleClickElement: (element: ElementComponent) => void,
     isSelected: boolean,
-    handleMouseDown: (e: React.MouseEvent, component: ElementComponent) => void;
+    handleMouseDown: (e: React.MouseEvent | React.TouchEvent, component: ElementComponent) => void;
     handleResize: (e: React.MouseEvent, direction: string) => void;
     handleRotate: (e: React.MouseEvent) => void;
     isRotating: RefObject<boolean>;
     rotate: number;
     isPreview?: boolean;
+    scala: number
 }) => {
 
     return (
         <div
             onMouseDown={(e) => handleMouseDown(e, component)}
+            onTouchStart={(e) => handleMouseDown(e, component)}
             key={component.id}
             id={`element-${component.id}`}
             onClick={() => {
@@ -36,11 +38,11 @@ const Circle = ({
             }}
             className={`absolute group hover:border-[2px] hover:border-indigo-400 ${isSelected ? 'border-[2px] border-indigo-500' : ''}`}
             style={{
-                width: isPreview ? component.width * previewScale : component.width + "px",
-                height: isPreview ? component.height * previewScale : component.height + "px",
+                width: component.width * scala + "px",
+                height: component.height * scala + "px",
                 zIndex: component.z_index,
-                top: isPreview ? component.top! * previewScale : component.top,
-                left: isPreview ? component.left! * previewScale : component.left,
+                top: component.top! * scala,
+                left: component.left! * scala,
                 transform: `rotate(${component.rotation || 0}deg)`,
                 transformOrigin: 'center',
             }}

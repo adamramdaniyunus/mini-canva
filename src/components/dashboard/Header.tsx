@@ -19,11 +19,6 @@ export default function Header() {
   const user = session.data?.user;
   
   const handleCreateNewDesign = async () => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
-      router.push('/mobile-not-supported');
-      return
-    }
     setLoading(true);
     setState({ width: 400, height: 400 });
     let promise: { data: { project_id: string, frame_id: string } } = { data: { project_id: "", frame_id: "" } };
