@@ -40,7 +40,7 @@ export default function DesignModules() {
   const designId = params?.id;
   const newImageId = Math.floor(Math.random() * 100 + 1).toString();
   const [isMobile, setIsMobile] = useState(false);
-  
+
   useEffect(() => {
     const mobileCheck = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     setIsMobile(mobileCheck);

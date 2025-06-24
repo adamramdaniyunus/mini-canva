@@ -3,14 +3,15 @@ import { FaRotate } from 'react-icons/fa6';
 
 const ResizeButton = ({ handleResize, handleRotate }:
     {
-        handleResize: (e: React.MouseEvent, direction: string) => void;
-        handleRotate: (e: React.MouseEvent) => void;
+        handleResize: (e: React.MouseEvent | React.TouchEvent, direction: string) => void;
+        handleRotate: (e: React.MouseEvent | React.TouchEvent) => void;
     }) => {
     return (
         <>
             {/* Rotate Button */}
             <div
                 onMouseDown={(e) => handleRotate(e)}
+                onTouchStart={(e) => handleRotate(e)}
                 className="absolute bg-white border text-black border-black rounded-full cursor-crosshair max-w-[30px] max-h-[30px]"
                 style={{
                     bottom: -40, // di bawah shape
@@ -40,6 +41,7 @@ const ResizeButton = ({ handleResize, handleRotate }:
                     <div
                         key={dir}
                         onMouseDown={(e) => handleResize(e, dir)}
+                        onTouchStart={(e) => handleResize(e, dir)}
                         style={positionStyle}
                     />
                 );
@@ -51,6 +53,7 @@ const ResizeButton = ({ handleResize, handleRotate }:
                 <div
                     key={dir}
                     onMouseDown={(e) => handleResize(e, dir)}
+                    onTouchStart={(e) => handleResize(e, dir)}
                     className={`absolute bg-white border border-black ${dir == "right" || dir == "left" ? "cursor-e-resize" : "cursor-ns-resize"}`}
                     style={{
                         width: dir === "top" || dir === "bottom" ? "10px" : "4px",

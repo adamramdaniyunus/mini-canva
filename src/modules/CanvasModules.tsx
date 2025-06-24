@@ -1,5 +1,5 @@
 "use client";
-import React, { RefObject, useRef, useState } from "react";
+import React, { RefObject, useEffect, useRef, useState } from "react";
 import { ElementComponent } from "@/types/Element.type";
 import Rect from "@/components/design/Rect";
 import Circle from "@/components/design/Circle";
@@ -55,7 +55,7 @@ const Canvas = ({
   handleChange: () => void;
   canvasRef?: RefObject<HTMLDivElement | null>;
   isPreview?: boolean;
-  isMobile?:boolean;
+  isMobile?: boolean;
 }) => {
   // const mainFrame = components.find((c) => c.name === "main_frame");
   const otherComponents = components.filter((c) => c.name !== "main_frame");
@@ -63,8 +63,27 @@ const Canvas = ({
   const [rotate, setRotate] = useState(0);
   const isDragging = useRef(false);
   const isRotating = useRef(false);
-  const isLoading = !mainFrame;
-  const scala = isPreview ? previewScale : isMobile ? 0.4  : 1;
+  const [isLoading, setLoading] = useState(true)
+  const scala = isPreview ? previewScale : isMobile ? 0.4 : 1;
+  const componentsRef = useRef(components)
+  
+  useEffect(() => {
+    componentsRef.current = components;
+  }, [components]);
+
+  useEffect(()=>{
+    setInterval(() => {
+      setLoading(false)
+    }, 800);
+  }, [])
+
+  // Helper untuk mendapatkan koordinat dari mouse atau sentuhan
+  const getClientCoords = (e: MouseEvent | TouchEvent) => {
+    if ("touches" in e) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+    return { x: e.clientX, y: e.clientY };
+  };
 
   // Function to handle mouse down event for dragging the element
   // This function is called when the user clicks on the element
@@ -74,14 +93,6 @@ const Canvas = ({
     e.stopPropagation();
     if (isPreview) return;
     handleClickElement(component);
-
-    // Helper untuk mendapatkan koordinat dari mouse atau sentuhan
-    const getClientCoords = (e: MouseEvent | TouchEvent) => {
-      if ("touches" in e) {
-        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      }
-      return { x: e.clientX, y: e.clientY };
-    };
 
     const { x: startX, y: startY } = getClientCoords(e.nativeEvent);
 
@@ -111,7 +122,7 @@ const Canvas = ({
       const relativeTop = newTop - (parentRect?.top || 0);
 
       updateElementPosition(component.id, relativeTop / scala, relativeLeft / scala);
-      setDrawerPosition({ top: relativeTop / scala, left: relativeLeft / scala});
+      setDrawerPosition({ top: relativeTop / scala, left: relativeLeft / scala });
     }, THROTTLE_INTERVAL);
 
 
@@ -129,7 +140,7 @@ const Canvas = ({
     };
 
     document.addEventListener("mousemove", handleInteractionMove);
-    document.addEventListener("touchmove", handleInteractionMove, { passive: false }); 
+    document.addEventListener("touchmove", handleInteractionMove, { passive: false });
 
     document.addEventListener("mouseup", handleInteractionEnd);
     document.addEventListener("touchend", handleInteractionEnd);
@@ -139,22 +150,34 @@ const Canvas = ({
   // This function is called when the user clicks and drags a resize handle
   // It calculates the new width and height based on the mouse movement
   // and updates the element's size accordingly
-  const handleResize = (e: React.MouseEvent, direction: string) => {
-    if (!selectedElement || isPreview) return
+  const handleResize = (
+    e: React.MouseEvent | React.TouchEvent,
+    direction: string
+  ) => {
+    if (!selectedElement || isPreview || !componentsRef) return;
+
     e.stopPropagation();
-    e.preventDefault();
+    // Panggil preventDefault untuk touch event agar tidak men-trigger scroll
+    if (e.type === 'touchstart') {
+      e.preventDefault();
+    } else {
+      e.preventDefault();
+    }
 
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const startWidth = selectedElement.width;
-    const startHeight = selectedElement.height;
-    const startTop = selectedElement.top;
-    const startLeft = selectedElement.left;
-    const startFontSize = selectedElement.font_size || 16;
+    const currentElement = componentsRef.current.find(el => el.id === selectedElement.id);
+    if (!currentElement) return;
 
-    const onMouseMove = throttle((moveEvent: MouseEvent) => {
-      const dx = moveEvent.clientX - startX;
-      const dy = moveEvent.clientY - startY;
+    const { x: startX, y: startY } = getClientCoords(e.nativeEvent);
+    const startWidth = currentElement.width;
+    const startHeight = currentElement.height;
+    const startTop = currentElement.top;
+    const startLeft = currentElement.left;
+    const startFontSize = currentElement.font_size || 16;
+
+    const handleResizeMove = (moveEvent: MouseEvent | TouchEvent) => {
+      const { x: moveX, y: moveY } = getClientCoords(moveEvent);
+      const dx = moveX - startX;
+      const dy = moveY - startY;
 
       let newWidth = startWidth;
       let newHeight = startHeight;
@@ -166,16 +189,10 @@ const Canvas = ({
         direction.includes("bottom") && direction.includes("left") ||
         direction.includes("bottom") && direction.includes("right");
 
-      if (direction.includes("right")) newWidth += dx; // Increase width
-      if (direction.includes("bottom")) newHeight += dy; // Increase height
-      if (direction.includes("left")) {
-        newWidth -= dx; // Decrease width
-        newLeft += dx; // Move left
-      }
-      if (direction.includes("top")) {
-        newHeight -= dy; // Decrease height
-        newTop += dy; // Move up
-      }
+      if (direction.includes("right")) newWidth += dx;
+      if (direction.includes("bottom")) newHeight += dy;
+      if (direction.includes("left")) { newWidth -= dx; newLeft += dx; }
+      if (direction.includes("top")) { newHeight -= dy; newTop += dy; }
 
       if (newWidth > 20 && newHeight > 20) {
         updateElementSize(selectedElement.id, newWidth, newHeight);
@@ -183,83 +200,94 @@ const Canvas = ({
       }
 
       if (selectedElement.type === "text" && isCornerResize) {
-        // Calculate the new font size based on the new width and height
         const scale = newWidth / startWidth;
         const newFontSize = Math.max(8, Math.round(startFontSize * scale));
         updateElementSize(selectedElement.id, newWidth, newHeight, newFontSize);
       }
-    }, THROTTLE_INTERVAL);
 
-    const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
     };
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    const handleResizeEnd = () => {
+      // Cleanup: Hapus SEMUA listener dari window
+      window.removeEventListener("mousemove", handleResizeMove);
+      window.removeEventListener("mouseup", handleResizeEnd);
+      window.removeEventListener("touchmove", handleResizeMove);
+      window.removeEventListener("touchend", handleResizeEnd);
+      handleChange();
+    };
+
+    window.addEventListener("mousemove", handleResizeMove);
+    window.addEventListener("mouseup", handleResizeEnd);
+    window.addEventListener("touchmove", handleResizeMove);
+    window.addEventListener("touchend", handleResizeEnd);
   };
 
   // Function to handle rotation of the element
   // This function is called when the user clicks and drags the rotate handle
   // It calculates the new angle based on the mouse movement
   // and updates the element's rotation accordingly
-  const handleRotate = (e: React.MouseEvent) => {
-    if (isPreview) return
+  const handleRotate = (e: React.MouseEvent | React.TouchEvent) => {
+    if (isPreview || !selectedElement) return;
     e.preventDefault();
     e.stopPropagation();
-    if (!selectedElement) return;
+
+    const currentElement = componentsRef.current.find(el => el.id === selectedElement.id);
+    if (!currentElement) return;
 
     const target = document.getElementById(`element-${selectedElement.id}`);
     if (!target) return;
+
+    const { x: startX, y: startY } = getClientCoords(e.nativeEvent);
 
     const rect = target.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
 
-    const startX = e.clientX;
-    const startY = e.clientY;
-
+    // Perbaikan: Ambil rotasi awal dari state/ref yang terjamin terbaru, bukan dari DOM/dataset
+    const initialRotation = currentElement.rotation || 0;
     const startAngle = Math.atan2(startY - centerY, startX - centerX);
-    const initialRotation = parseFloat(target.dataset.rotation || "0");
 
     const snapAngle = (angle: number, increment: number = 15) => {
       return Math.round(angle / increment) * increment;
     };
 
-    const mouseMove = throttle((ev: MouseEvent) => {
+    const handleRotateMove = throttle((moveEvent: MouseEvent | TouchEvent) => {
       isRotating.current = true;
-      const currentAngle = Math.atan2(ev.clientY - centerY, ev.clientX - centerX);
+      const { x: moveX, y: moveY } = getClientCoords(moveEvent);
+
+      const currentAngle = Math.atan2(moveY - centerY, moveX - centerX);
       const angleDiff = (currentAngle - startAngle) * (180 / Math.PI);
       let newRotation = initialRotation + angleDiff;
 
-      // Normalisasi sudut
-      newRotation = (newRotation + 360) % 360;
-
+      // Normalisasi sudut bisa di-handle di akhir saja agar tidak "loncat" saat melewati 360
       target.style.transform = `rotate(${newRotation}deg)`;
-      target.dataset.rotation = newRotation.toString();
-      setRotate(newRotation);
+      setRotate(newRotation); // Untuk menampilkan angka di UI
     }, THROTTLE_INTERVAL);
 
-    const mouseUp = () => {
+    const handleRotateEnd = () => {
       isRotating.current = false;
-      window.removeEventListener("mousemove", mouseMove);
-      window.removeEventListener("mouseup", mouseUp);
 
-      const finalRotation = parseFloat(target.dataset.rotation || "0");
+      window.removeEventListener("mousemove", handleRotateMove);
+      window.removeEventListener("mouseup", handleRotateEnd);
+      window.removeEventListener("touchmove", handleRotateMove);
+      window.removeEventListener("touchend", handleRotateEnd);
+
+      const transform = target.style.transform;
+      const match = transform.match(/rotate\(([-0-9.]+)deg\)/);
+      const finalRotation = match ? parseFloat(match[1]) : initialRotation;
+
       const snapped = snapAngle(finalRotation);
 
       target.style.transform = `rotate(${snapped}deg)`;
-      target.dataset.rotation = snapped.toString();
-
       updateElementRotation(selectedElement.id, snapped);
       setRotate(snapped);
     };
 
-    window.addEventListener("mousemove", mouseMove);
-    window.addEventListener("mouseup", mouseUp);
+    window.addEventListener("mousemove", handleRotateMove);
+    window.addEventListener("touchmove", handleRotateMove, { passive: false });
+    window.addEventListener("mouseup", handleRotateEnd);
+    window.addEventListener("touchend", handleRotateEnd);
   };
-
-
 
   // handle drag and drop image
   // This function is called when the user drops an image onto the canvas
@@ -339,8 +367,8 @@ const Canvas = ({
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
           style={{
-            width: mainFrame ? mainFrame.width * scala : 500 * scala,
-            height: mainFrame ? mainFrame.height * scala : 400 * scala,
+            width: mainFrame ? mainFrame.width * scala : "100%",
+            height: mainFrame ? mainFrame.height * scala : "100%",
             background: mainFrame ? mainFrame.background_color : "#DBDBDB",
             zIndex: 1,
             userSelect: 'none'
