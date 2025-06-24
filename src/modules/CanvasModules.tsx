@@ -66,12 +66,12 @@ const Canvas = ({
   const [isLoading, setLoading] = useState(true)
   const scala = isPreview ? previewScale : isMobile ? 0.4 : 1;
   const componentsRef = useRef(components)
-  
+
   useEffect(() => {
     componentsRef.current = components;
   }, [components]);
 
-  useEffect(()=>{
+  useEffect(() => {
     setInterval(() => {
       setLoading(false)
     }, 800);
@@ -173,6 +173,12 @@ const Canvas = ({
     const startTop = currentElement.top;
     const startLeft = currentElement.left;
     const startFontSize = currentElement.font_size || 16;
+
+    // Mencegah scroll saat drag di mobile
+    if (e.type === 'touchmove') {
+      e.preventDefault();
+    }
+
 
     const handleResizeMove = (moveEvent: MouseEvent | TouchEvent) => {
       const { x: moveX, y: moveY } = getClientCoords(moveEvent);
@@ -371,7 +377,8 @@ const Canvas = ({
             height: mainFrame ? mainFrame.height * scala : "100%",
             background: mainFrame ? mainFrame.background_color : "#DBDBDB",
             zIndex: 1,
-            userSelect: 'none'
+            userSelect: 'none',
+            touchAction: 'none'
           }}
         >
           {/* If there's a background image */}
