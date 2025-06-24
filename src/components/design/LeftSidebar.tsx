@@ -112,7 +112,7 @@ const LeftSidebar = ({ createShapes, addImage, addText, handleChangeBackground }
   const ComponentToRender = components[state] || components["shape"];
 
   return (
-    <main className="relative">
+    <main className="md:relative absolute md:left-0 left-[-400px]">
       <aside className="w-20 bg-white relative shadow-md flex z-50 flex-col items-center py-4 space-y-6 h-full">
         {items.map((item, i) => (
           <button

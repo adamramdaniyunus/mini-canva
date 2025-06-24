@@ -12,7 +12,8 @@ const Polygon = ({
     handleRotate,
     isRotating,
     rotate,
-    isPreview
+    isPreview,
+    scala
 }: {
     component: ElementComponent,
     handleClickElement: (element: ElementComponent) => void,
@@ -23,6 +24,7 @@ const Polygon = ({
     isRotating: RefObject<boolean>;
     rotate: number;
     isPreview?:boolean;
+    scala:number;
 }) => {
 
     return (
@@ -36,11 +38,11 @@ const Polygon = ({
             key={component.id}
             className={`absolute group hover:border-[2px] hover:border-indigo-400 ${isSelected ? 'border-[2px] border-indigo-500' : ''}`}
             style={{
-                width: isPreview ? component.width * previewScale : component.width + "px",
-                height: isPreview ? component.height * previewScale : component.height + "px",
+                width:  component.width! * scala   + "px",
+                height:  component.height! * scala   + "px",
                 zIndex: component.z_index,
-                top: isPreview ? component.top! * previewScale : component.top,
-                left: isPreview ? component.left! * previewScale : component.left,
+                top:   component.top! * scala  ,
+                left:   component.left! * scala  ,
                 transform: `rotate(${component.rotation || 0}deg)`,
                 transformOrigin: 'center',
             }}

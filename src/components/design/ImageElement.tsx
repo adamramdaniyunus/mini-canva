@@ -12,7 +12,8 @@ const ImageElement = ({
     handleRotate,
     isRotating,
     rotate,
-    isPreview
+    isPreview,
+    scala
 }: {
     component: ElementComponent,
     handleClickElement: (element: ElementComponent) => void,
@@ -22,14 +23,15 @@ const ImageElement = ({
     handleRotate: (e: React.MouseEvent) => void;
     isRotating: RefObject<boolean>;
     rotate: number;
-    isPreview?:boolean;
+    isPreview?: boolean;
+    scala:number
 }) => {
 
     return (
         <div
             onMouseDown={(e) => handleMouseDown(e, component)}
             onClick={() => {
-                if(isPreview) return;
+                if (isPreview) return;
                 handleClickElement(component)
             }}
             key={component.id}
@@ -37,11 +39,11 @@ const ImageElement = ({
             className={`absolute hover:border-[2px] hover:border-indigo-400 ${isSelected ? "border-[2px] border-indigo-500" : ""
                 }`}
             style={{
-                width: isPreview ? component.width * previewScale : component.width + "px",
-                height: isPreview ? component.height * previewScale : component.height + "px",
+                width: component.width! * scala + "px",
+                height: component.height! * scala + "px",
                 zIndex: component.z_index,
-                top: isPreview ? component.top! * previewScale : component.top,
-                left: isPreview ? component.left! * previewScale : component.left,
+                top: component.top! * scala,
+                left: component.left! * scala,
                 cursor: "move",
                 transform: `rotate(${component.rotation || 0}deg)`,
                 transformOrigin: 'center',

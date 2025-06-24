@@ -39,6 +39,12 @@ export default function DesignModules() {
   const params = useParams();
   const designId = params?.id;
   const newImageId = Math.floor(Math.random() * 100 + 1).toString();
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const mobileCheck = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    setIsMobile(mobileCheck);
+  }, [isMobile]);
 
   // show color picker
   const handleShowColorPicker = () => {
@@ -861,6 +867,7 @@ export default function DesignModules() {
                 handleIsTyping={handleIsTyping}
                 handleChange={handleChange}
                 canvasRef={canvasRef}
+                isMobile={isMobile}
               />
               {(selectedElement || selectedCanvas) && (
                 <FeaturePanel
