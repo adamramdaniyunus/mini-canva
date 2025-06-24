@@ -18,8 +18,8 @@ const ImageElement = ({
     handleClickElement: (element: ElementComponent) => void,
     isSelected: boolean,
     handleMouseDown: (e: React.MouseEvent | React.TouchEvent, component: ElementComponent) => void;
-    handleResize: (e: React.MouseEvent, direction: string) => void;
-    handleRotate: (e: React.MouseEvent) => void;
+    handleResize: (e: React.MouseEvent | React.TouchEvent, direction: string) => void;
+    handleRotate: (e: React.MouseEvent | React.TouchEvent) => void;
     isRotating: RefObject<boolean>;
     rotate: number;
     isPreview?: boolean;
