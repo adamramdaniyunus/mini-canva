@@ -257,7 +257,7 @@ const Canvas = ({
 
       const currentAngle = Math.atan2(moveY - centerY, moveX - centerX);
       const angleDiff = (currentAngle - startAngle) * (180 / Math.PI);
-      let newRotation = initialRotation + angleDiff;
+      const newRotation = initialRotation + angleDiff;
 
       // Normalisasi sudut bisa di-handle di akhir saja agar tidak "loncat" saat melewati 360
       target.style.transform = `rotate(${newRotation}deg)`;
