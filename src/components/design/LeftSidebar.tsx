@@ -161,8 +161,8 @@ const LeftSidebar = ({ createShapes, addImage, addText, handleChangeBackground }
       </main>
 
       <div className="relative md:hidden">
-        <main className="fixed bottom-0 overflow-x-auto">
-          <aside className="w-full bg-white relative shadow-md overflow-x-auto flex z-50 items-center py-4 space-y-6 h-full">
+        <main className="fixed bottom-0 overflow-x-auto bg-white z-[999999]">
+          <aside className="w-[calc(100vw-5vw)] bg-white relative shadow-md overflow-x-auto flex z-50 items-center py-4 space-y-6 h-full">
             {items.map((item, i) => (
               <button
                 onClick={() => handleShowFeature(item.state)}
