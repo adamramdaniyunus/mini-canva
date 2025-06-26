@@ -71,7 +71,7 @@ const Text = ({
                 height: "auto",
                 transform: `rotate(${rotate}deg)`,
                 fontFamily: component.font_family,
-                fontSize: component.font_size! * scala,
+                fontSize: component.font_size && component.font_size * scala,
                 backgroundImage: isGradient ? component.color : undefined,
                 WebkitBackgroundClip: isGradient ? "text" : undefined,
                 WebkitTextFillColor: isGradient ? "transparent" : undefined,
@@ -113,7 +113,7 @@ const Text = ({
                     className={`bg-transparent border-none outline-none resize-none w-full h-full ${isGradient ? 'text-transparent' : ''}`}
                     style={{
                         fontFamily: component.font_family,
-                        fontSize: component.font_size,
+                        fontSize: component.font_size && component.font_size * scala,
                         color: isEditing ? component.color : 'transparent', // tampilkan warna saat editing
                         backgroundImage: isGradient && !isEditing ? component.color : undefined,
                         WebkitBackgroundClip: isGradient && !isEditing ? "text" : undefined,

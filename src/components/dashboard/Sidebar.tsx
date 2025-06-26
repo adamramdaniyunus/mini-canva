@@ -96,7 +96,7 @@ const Sidebar = () => {
         </ul>
 
       </aside>
-      <button onClick={handleShowSidebar} className='md:fixed hidden p-4 bg-white shadow-md rounded-md z-[99999] active:scale-90 transition-all duration-300'>
+      <button onClick={handleShowSidebar} className='fixed md:hidden p-4 bg-white shadow-md rounded-md z-[99999] active:scale-90 transition-all duration-300'>
         <BiMenu/>
       </button>
       <aside className={`${showSidebar ? "left-0" : "-left-[300px]"} top-0  w-64 p-5 md:hidden fixed z-[999999] bg-white h-screen transition-all duration-300`}>
