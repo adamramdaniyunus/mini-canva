@@ -1,0 +1,71 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request: # Generate Image when PR is created or updated
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the application
+        run: npm run build
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # Create 2 Images for main and preview deployment
+      - name: Build Docker image
+        run: |
+          docker build -t adamramdaniyunus/mini-canva:${{ github.sha }} .
+          docker build -t adamramdaniyunus/mini-canva:latest .
+
+      - name: Push Docker image
+        run: |
+          docker push adamramdaniyunus/mini-canva:${{ github.sha }}
+          docker push adamramdaniyunus/mini-canva:latest
+
+      # 🔹 Konfigurasi AWS Credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 🔹 Update kubeconfig agar kubectl bisa connect ke EKS
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name mini-canva-cluster --region ${{ secrets.AWS_REGION }}
+
+      # 🔹 Deploy ke Kubernetes
+      - name: Deploy to Kubernetes
+        run: |
+          sed -i "s|IMAGE_TAG|${{ github.sha }}|g" deployment/mini-canva.yaml
+          kubectl apply -f deployment/mini-canva.yaml
+
+      # Push to main "Production"
+      - name: Deploy to Production
+        if: github.ref == 'refs/heads/main'
+        run: |
+          sed -i "s|IMAGE_TAG|latest|g" deployment/mini-canva.yaml
+          kubectl apply -f deployment/mini-canva.yaml
+
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}

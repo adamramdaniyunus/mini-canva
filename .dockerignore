@@ -1,0 +1,31 @@
+# Dependency directories
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Environment
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Git & CI
+.git
+.gitignore
+.gitattributes
+.github
+.vscode
+.idea
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist
+build
+.next
+out
+coverage
