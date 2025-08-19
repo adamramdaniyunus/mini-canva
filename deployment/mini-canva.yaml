@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mini-canva
+  namespace: mini-canva
 spec:
   replicas: 2
   selector:
@@ -22,6 +23,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mini-canva
+  namespace: mini-canva
 spec:
   selector:
     app: mini-canva
