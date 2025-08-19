@@ -82,17 +82,17 @@ jobs:
           kubectl create namespace "$PR_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
           
           # Buat file YAML baru dari template atau yang sudah ada
-          cp deployment/mini-canva.yaml deployment/pr-preview-${{ github.event.pull_request.number }}.yaml
+          cp deployment/mini-canva.yaml deployment/mini-canva-pr-${{ github.event.pull_request.number }}.yaml
           
           # Ubah nama Deployment, Service, dan image tag agar unik
           # Dan pastikan namespace di YAML sesuai dengan namespace yang baru dibuat
-          sed -i "s/mini-canva/mini-canva-pr-${{ github.event.pull_request.number }}/g" deployment/pr-preview-${{ github.event.pull_request.number }}.yaml
-          sed -i "s|adamramdaniyunus/mini-canva:latest|adamramdaniyunus/mini-canva:pr-${{ github.event.pull_request.number }}|g" deployment/pr-preview-${{ github.event.pull_request.number }}.yaml
+          sed -i "s/mini-canva/mini-canva-pr-${{ github.event.pull_request.number }}/g" deployment/mini-canva-pr-${{ github.event.pull_request.number }}.yaml
+          sed -i "s|adamramdaniyunus/mini-canva:latest|adamramdaniyunus/mini-canva:pr-${{ github.event.pull_request.number }}|g" deployment/mini-canva-pr-${{ github.event.pull_request.number }}.yaml
           # Pastikan baris ini ada jika Anda ingin setiap PR memiliki namespace sendiri:
-          sed -i "s/namespace: mini-canva/namespace: $PR_NAMESPACE/g" deployment/pr-preview-${{ github.event.pull_request.number }}.yaml
+          sed -i "s/namespace: mini-canva/namespace: $PR_NAMESPACE/g" deployment/mini-canva-pr-${{ github.event.pull_request.number }}.yaml
 
           # Terapkan perubahan ke cluster
-          kubectl apply -f deployment/pr-preview-${{ github.event.pull_request.number }}.yaml
+          kubectl apply -f deployment/mini-canva-pr-${{ github.event.pull_request.number }}.yaml
           
       # 🔹 Hapus lingkungan preview saat PR ditutup
       - name: Cleanup Preview Environment
