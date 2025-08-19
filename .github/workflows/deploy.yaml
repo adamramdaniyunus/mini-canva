@@ -4,13 +4,17 @@ on:
   push:
     branches:
       - main
-  pull_request: # Generate Image when PR is created or updated
+  pull_request:
     branches:
       - main
-
+      
 jobs:
-  build:
+  # Job untuk build, tag, dan push image (untuk PR & Main)
+  build-image:
+    name: Build & Push Image
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.set-image-tag.outputs.tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -29,27 +33,38 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: npm run build
 
+      - name: Set image tag
+        id: set-image-tag
+        run: |
+          # Menggunakan tag yang berbeda untuk PR dan main
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "::set-output name=tag::pr-${{ github.event.pull_request.number }}"
+          else
+            echo "::set-output name=tag::${{ github.sha }}"
+          fi
+
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-      # Create 2 Images for main and preview deployment
-      - name: Build Docker image
+      
+      # Membangun dan mendorong image dengan tag yang telah ditentukan
+      - name: Build & Push Image
         run: |
           docker build \
             --build-arg NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }} \
             --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }} \
-            -t adamramdaniyunus/mini-canva:${{ github.sha }} .
-          docker build \
-            --build-arg NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }} \
-            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }} \
-            -t adamramdaniyunus/mini-canva:latest .
+            -t adamramdaniyunus/mini-canva:${{ steps.set-image-tag.outputs.tag }} .
+          docker push adamramdaniyunus/mini-canva:${{ steps.set-image-tag.outputs.tag }}
 
-      - name: Push Docker image
-        run: |
-          docker push adamramdaniyunus/mini-canva:${{ github.sha }}
-          docker push adamramdaniyunus/mini-canva:latest
+  # Job untuk Preview Deployment (PR)
+  preview-deployment:
+    name: Preview Deployment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: build-image
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      # 🔹 Konfigurasi AWS Credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -57,23 +72,44 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # 🔹 Update kubeconfig agar kubectl bisa connect ke EKS
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name mini-canva-cluster --region ${{ secrets.AWS_REGION }}
 
-      # 🔹 Deploy ke Kubernetes
+      - name: Deploy Preview Environment
+        run: |
+          cp deployment/mini-canva.yaml deployment/pr-preview-${{ github.event.pull_request.number }}.yaml
+          sed -i "s/mini-canva/mini-canva-pr-${{ github.event.pull_request.number }}/g" deployment/pr-preview-${{ github.event.pull_request.number }}.yaml
+          sed -i "s|adamramdaniyunus/mini-canva:latest|adamramdaniyunus/mini-canva:pr-${{ github.event.pull_request.number }}|g" deployment/pr-preview-${{ github.event.pull_request.number }}.yaml
+          kubectl apply -f deployment/pr-preview-${{ github.event.pull_request.number }}.yaml
+      
+      - name: Cleanup Preview Environment
+        if: github.event.action == 'closed'
+        run: |
+          kubectl delete deployment mini-canva-pr-${{ github.event.pull_request.number }} -n mini-canva
+          kubectl delete service mini-canva-pr-${{ github.event.pull_request.number }} -n mini-canva
+
+  # Job untuk Deploy ke Produksi (main)
+  deploy-to-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: build-image
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name mini-canva-cluster --region ${{ secrets.AWS_REGION }}
+
+      # Menggunakan tag commit hash untuk menjamin update
       - name: Deploy to Kubernetes
         run: |
           sed -i "s|IMAGE_TAG|${{ github.sha }}|g" deployment/mini-canva.yaml
           kubectl apply -f deployment/mini-canva.yaml
-
-      # Push to main "Production"
-      - name: Deploy to Production
-        if: github.ref == 'refs/heads/main'
-        run: |
-          sed -i "s|IMAGE_TAG|latest|g" deployment/mini-canva.yaml
-          kubectl apply -f deployment/mini-canva.yaml
-
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
