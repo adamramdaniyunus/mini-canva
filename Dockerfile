@@ -1,5 +1,5 @@
 # Setup Project
-FROM node:18-alpine
+FROM node:18-alpine AS builder
 
 # Define working directory
 WORKDIR /app
