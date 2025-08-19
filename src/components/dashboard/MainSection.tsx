@@ -56,7 +56,7 @@ const MainSection = () => {
   return (
     <div className="relative h-64 bg-gradient-to-tr flex items-center justify-center from-blue-500 to-white rounded-md">
       <h1 className="text-2xl text-white font-semibold drop-shadow-sm">
-        What will you design today?
+        What will you design today EDITED
       </h1>
       <div className="absolute right-4 top-4" ref={btnConfigRef}>
         <Button onClick={handleShowConfig}>Custom Size</Button>

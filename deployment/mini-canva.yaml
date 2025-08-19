@@ -15,9 +15,35 @@ spec:
     spec:
       containers:
         - name: mini-canva
-          image: adamramdaniyunus/mini-canva:IMAGE_TAG
+          image: adamramdaniyunus/mini-canva:latest
           ports:
             - containerPort: 3000
+          env:
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextauth-secret
+                  key: NEXTAUTH_SECRET
+            - name: NEXT_PUBLIC_SUPABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: supabase-secret
+                  key: NEXT_PUBLIC_SUPABASE_URL
+            - name: NEXT_PUBLIC_SUPABASE_ANON_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: supabase-secret
+                  key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: google-secret
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: google-secret
+                  key: GOOGLE_CLIENT_SECRET
 ---
 apiVersion: v1
 kind: Service
