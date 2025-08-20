@@ -13,8 +13,6 @@ jobs:
   build-image:
     name: Build & Push Image
     runs-on: ubuntu-latest
-    outputs:
-      image_tag: ${{ steps.set-image-tag.outputs.tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -33,20 +31,18 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: npm run build
 
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
       - name: Set image tag
         id: set-image-tag
         run: |
-          # Menggunakan tag yang berbeda untuk PR dan main
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "::set-output name=tag::pr-${{ github.event.pull_request.number }}"
           else
             echo "::set-output name=tag::${{ github.sha }}"
           fi
 
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-      
-      # Membangun dan mendorong image dengan tag yang telah ditentukan
       - name: Build & Push Image
         run: |
           docker build \
@@ -88,14 +84,54 @@ jobs:
           
           # Terapkan perubahan ke cluster
           kubectl apply -f deployment/pr-preview-${{ github.event.pull_request.number }}.yaml
-      # 🔹 Hapus lingkungan preview saat PR ditutup
+
+      - name: Get Preview URL and Comment on PR
+        id: get-url
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = context.issue.number;
+            let url = '';
+            for (let i = 0; i < 60; i++) {
+              try {
+                const service = await github.rest.kubernetes.getService({
+                  namespace: 'mini-canva',
+                  name: `mini-canva-pr-${prNumber}`,
+                });
+                if (service.data.status.loadBalancer.ingress && service.data.status.loadBalancer.ingress.length > 0) {
+                  url = service.data.status.loadBalancer.ingress[0].hostname || service.data.status.loadBalancer.ingress[0].ip;
+                  if (url) break;
+                }
+              } catch (e) {
+                console.error(e);
+              }
+              await new Promise(r => setTimeout(r, 10000));
+            }
+
+            if (url) {
+              github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `Preview lingkungan Anda tersedia di:\n\n👉 **http://${url}**`
+              });
+            } else {
+              github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: "Gagal mendapatkan URL pratinjau. Silakan periksa log job."
+              });
+            }
+
       - name: Cleanup Preview Environment
         if: github.event.action == 'closed'
         run: |
-          PR_NAMESPACE="mini-canva-pr-${{ github.event.pull_request.number }}"
-          kubectl delete namespace "$PR_NAMESPACE" # Hapus seluruh namespace
+          kubectl delete deployment mini-canva-pr-${{ github.event.pull_request.number }} -n mini-canva
+          kubectl delete service mini-canva-pr-${{ github.event.pull_request.number }} -n mini-canva
 
-  # Job untuk Deploy ke Produksi (main)
+  # Job untuk Deploy ke Production (main)
   deploy-to-prod:
     name: Deploy to Production
     runs-on: ubuntu-latest
@@ -115,8 +151,7 @@ jobs:
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name mini-canva-cluster --region ${{ secrets.AWS_REGION }}
 
-      # Menggunakan tag commit hash untuk menjamin update
       - name: Deploy to Kubernetes
         run: |
-          sed -i "s|IMAGE_TAG|${{ github.sha }}|g" deployment/mini-canva.yaml
+          sed -i "s/adamramdaniyunus\/mini-canva:latest/adamramdaniyunus\/mini-canva:${{ github.sha }}/g" deployment/mini-canva.yaml
           kubectl apply -f deployment/mini-canva.yaml
